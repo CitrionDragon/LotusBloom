@@ -19,7 +19,7 @@ public class SampleLotusAddonVersion: VentLib.Version.Version
 
     public override string ToSimpleName()
     {
-        return "Sample Lotus Addon Version v1.2.3";
+        return "Lotus Bloom Addon Version v1.2.3";
     }
 
     public override string ToString() => "SampleLotusAddonVersion";
