@@ -15,7 +15,7 @@ public class SampleRoleAddon: LotusAddon
     public override void Initialize()
     {
         // Create instances first
-        List<CustomRole> allRoles = new List<CustomRole>() { new CrewCrew() , new Hypnotist() };
+        List<CustomRole> allRoles = new List<CustomRole>() { new CrewCrew() , new Hypnotist() ,new Harbinger()};
 
         // Add your role to the gamemmode of your choice (Standard in this case.)
         allRoles.ForEach(StandardRoles.AddRole);
