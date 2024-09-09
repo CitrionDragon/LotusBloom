@@ -92,5 +92,7 @@ public class Hypnotist: NeutralKillingBase
     }
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        base.Modify(roleModifier).OptionOverride(new IndirectKillCooldown(KillCooldown));
+        base.Modify(roleModifier)
+        .RoleColor(new Color(1f, 0.75f, 0.8f)
+        .OptionOverride(new IndirectKillCooldown(KillCooldown));
 }
