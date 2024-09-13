@@ -1,16 +1,16 @@
 using Hazel;
 
-namespace SampleRoleAddon.Version;
+namespace LotusBloom.Version;
 
 
 /// <summary>
 /// Version Representing this Addon
 /// </summary>
-public class SampleLotusAddonVersion: VentLib.Version.Version
+public class LotusBloomVersion: VentLib.Version.Version
 {
     public override VentLib.Version.Version Read(MessageReader reader)
     {
-        return new SampleLotusAddonVersion();
+        return new LotusBloomVersion();
     }
 
     protected override void WriteInfo(MessageWriter writer)
@@ -19,8 +19,8 @@ public class SampleLotusAddonVersion: VentLib.Version.Version
 
     public override string ToSimpleName()
     {
-        return "Lotus Bloom Addon Version v1.2.3";
+        return "Lotus Bloom Addon Version v1.0.0";
     }
 
-    public override string ToString() => "SampleLotusAddonVersion";
+    public override string ToString() => "LotusBloomAddon";
 }

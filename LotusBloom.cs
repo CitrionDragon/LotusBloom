@@ -8,9 +8,9 @@ using SampleRoleAddon.Gamemodes.BombTag;
 using SampleRoleAddon.Gamemodes.BombTag.Options;
 using Lotus.GameModes;
 
-namespace SampleRoleAddon;
+namespace LotusBloom;
 
-public class SampleRoleAddon: LotusAddon
+public class LotusBloom: LotusAddon
 {
     public override void Initialize()
     {
@@ -22,15 +22,11 @@ public class SampleRoleAddon: LotusAddon
 
         // Register roles
         ExportCustomRoles(allRoles, typeof(StandardGameMode));
-        
-        // Export gamemode
-        ExportGameModes(new List<IGameMode>() { new BombTagGamemode() });
-        _ = new BombTagOptionHolder();
     }
 
-    public override string Name { get; } = "Sample Role Addon";
+    public override string Name { get; } = "Lotus Bloom Addon Addon";
 
-    public override VentLib.Version.Version Version { get; } = new SampleLotusAddonVersion();
+    public override VentLib.Version.Version Version { get; } = new LotusBloomVersion();
 }
 
 
