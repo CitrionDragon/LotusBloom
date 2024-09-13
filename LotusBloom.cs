@@ -3,7 +3,6 @@ using Lotus.GameModes.Standard;
 using LotusBloom.Version;
 using Lotus.Roles;
 using System.Collections.Generic;
-using SampleRoleAddon.Roles.Standard;
 using LotusBloom.Roles.Standard;
 using LotusBloom.Roles.Standard.Neutral;
 
