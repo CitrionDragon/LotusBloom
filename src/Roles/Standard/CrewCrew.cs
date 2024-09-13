@@ -14,7 +14,7 @@ using Lotus.API.Odyssey;
 using Lotus.Chat;
 using System;
 
-namespace SampleRoleAddon.Roles.Standard;
+namespace LotusBloom.Roles.Standard;
 
 // The "Crew Crew" is a Crewmate role that does something.
 // If "Crew Crew" successfully reports enough players (determined by host) they win the game! It's that simple

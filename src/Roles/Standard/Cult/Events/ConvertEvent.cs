@@ -4,7 +4,7 @@ using Lotus.Roles.RoleGroups.Undead.Roles;
 using Lotus.API;
 using VentLib.Utilities;
 
-namespace Lotus.Roles.RoleGroups.Undead.Events;
+namespace LotusBloom.Roles.Standard.Cult.Events;
 
 public class ConvertEvent : TargetedAbilityEvent
 {

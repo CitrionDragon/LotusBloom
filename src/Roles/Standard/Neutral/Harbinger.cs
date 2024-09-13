@@ -10,6 +10,7 @@ using Lotus.GUI.Name.Holders;
 using Lotus.Logging;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Stock;
 using UnityEngine;
@@ -18,12 +19,15 @@ using VentLib.Logging;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Optionals;
+using Lotus.Roles;
+using Lotus;
 
-namespace Lotus.Roles.Standard.Neutral;
+namespace LotusBloom.Roles.Standard.Neutral;
 
 // TODO: Harbinger variant which kills everyone and is super OP or something lol
-public class Harbinger: TaskRoleBase
+public class Harbinger : TaskRoleBase
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Harbinger));
     private static ColorGradient _harbingerGradient = new(new Color(0.18f, 0.24f, 0.39f), new Color(0.57f, 0.36f, 0.57f));
     private Vector2 targetLocation;
     private int tasksBeforeCircle = 3;
@@ -44,20 +48,20 @@ public class Harbinger: TaskRoleBase
     [UIComponent(UI.Indicator)]
     private string RitualIndicator() => taskCount == tasksBeforeCircle ? RoleUtils.CalculateArrow(MyPlayer, targetLocation, RoleColor) : "";
 
-    [RoleAction(RoleActionType.OnHoldPet)]
+    [RoleAction(LotusActionType.OnHoldPet)]
     public void BeginProgressBar(int timesPet)
     {
         if (timesPet != 1 || taskCount < tasksBeforeCircle || Vector2.Distance(MyPlayer.GetTruePosition(), targetLocation) > ModConstants.ArrowActivationMin) return;
         progress = 0;
-        LiveString liveString = new(() =>
+        LiveString liveString = new(_ =>
         {
             if (progress < 0) return "";
             DevLogger.Log($"{progress / MaxRitualF}");
             return RoleUtils.HealthBar(progress, MaxRitual, _harbingerGradient.Evaluate(progress / MaxRitualF)) + "\n";
         });
         circleProgress?.Delete();
-        circleProgress = MyPlayer.NameModel().GCH<NameHolder>().Insert(0, new NameComponent(liveString, new []{GameState.Roaming }, ViewMode.Additive, MyPlayer));
-        Async.WaitUntil(() => progress = Math.Min(progress + 1, MaxRitual),p => p is < 0 or >= MaxRitual, FinishProgress, 0.2f, 30);
+        circleProgress = MyPlayer.NameModel().GCH<NameHolder>().Insert(0, new NameComponent(liveString, new[] { GameState.Roaming }, ViewMode.Additive, MyPlayer));
+        Async.WaitUntil(() => progress = Math.Min(progress + 1, MaxRitual), p => p is < 0 or >= MaxRitual, FinishProgress, 0.2f, 30);
     }
 
     protected override void OnTaskComplete(Optional<NormalPlayerTask> playerTask)
@@ -80,14 +84,14 @@ public class Harbinger: TaskRoleBase
         {
             circleProgress?.Delete();
             circleProgress = null;
-            VentLogger.Trace("Harbinger Ritual Cancelled");
+            log.Trace("Harbinger Ritual Cancelled");
             return;
         }
         DevLogger.Log("Completed one!!");
         taskCount = 0;
     }
 
-    [RoleAction(RoleActionType.OnPetRelease)]
+    [RoleAction(LotusActionType.OnPetRelease)]
     private void CancelProgressBar() => progress = -2;
 
 
