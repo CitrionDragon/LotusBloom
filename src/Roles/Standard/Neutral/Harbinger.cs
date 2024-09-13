@@ -23,7 +23,7 @@ using Lotus.Roles;
 using Lotus;
 
 namespace LotusBloom.Roles.Standard.Neutral;
-
+/*
 // TODO: Harbinger variant which kills everyone and is super OP or something lol
 public class Harbinger : TaskRoleBase
 {
@@ -115,3 +115,4 @@ public class Harbinger : TaskRoleBase
         }
     }
 }
+*/
