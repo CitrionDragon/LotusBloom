@@ -20,7 +20,7 @@ using VentLib.Utilities.Extensions;
 using Lotus.Roles.RoleGroups.NeutralKilling;
 using Lotus.Roles;
 
-namespace LotusBloom.Roles.Standard;
+namespace LotusBloom.Roles.Standard.Neutral;
 
 public class Hypnotist: NeutralKillingBase
 {

@@ -19,6 +19,7 @@ using VentLib.Logging;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Optionals;
+using VentLib.Options.UI;
 using Lotus.Roles;
 using Lotus;
 
@@ -101,6 +102,19 @@ public class Harbinger : TaskRoleBase
         .Gradient(_harbingerGradient)
         .SpecialType(SpecialType.Neutral);
 
+    protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
+        base.RegisterOptions(optionStream)
+            .SubOption(sub => sub.Name("Tasks per Ritual Circle")
+                .AddIntRange(1, 5, 1, 3)
+                .BindInt(i => tasksBeforeCircle = i)
+                .ShowSubOptionPredicate(o => (int)o > 1)
+                .Build())
+            .SubOption(sub => sub.Name("Rituals until win")
+                .AddIntRange(1, 5, 1, 3)
+                .BindInt(r => circleToWin = r)
+                .ShowSubOptionPredicate(o => (int)o > 1)
+                .Build());
+/*
     [Localized(nameof(Harbinger))]
     private static class Translations
     {
@@ -114,5 +128,6 @@ public class Harbinger : TaskRoleBase
             public static string RitualCirclesUntilWin = "Ritual Circles Until Win";
         }
     }
+    */
 }
 
