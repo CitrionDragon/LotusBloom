@@ -23,7 +23,7 @@ using Lotus.Roles;
 using Lotus;
 
 namespace LotusBloom.Roles.Standard.Neutral;
-/*
+
 // TODO: Harbinger variant which kills everyone and is super OP or something lol
 public class Harbinger : TaskRoleBase
 {
@@ -53,7 +53,7 @@ public class Harbinger : TaskRoleBase
     {
         if (timesPet != 1 || taskCount < tasksBeforeCircle || Vector2.Distance(MyPlayer.GetTruePosition(), targetLocation) > ModConstants.ArrowActivationMin) return;
         progress = 0;
-        LiveString liveString = new(_ =>
+        LiveString liveString = new(() =>
         {
             if (progress < 0) return "";
             DevLogger.Log($"{progress / MaxRitualF}");
@@ -115,4 +115,4 @@ public class Harbinger : TaskRoleBase
         }
     }
 }
-*/
+
