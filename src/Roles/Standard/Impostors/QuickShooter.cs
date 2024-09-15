@@ -18,9 +18,9 @@ using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using Lotus.Extensions;
 
-namespace LotusBloom.Roles.Standard.Impostors
+namespace LotusBloom.Roles.Standard.Impostors;
 
-public class QuickShooter : Impostor
+public class QuickShooter: Impostor
 {
     private int maxBullets;
     private int bulletCount;
@@ -32,7 +32,7 @@ public class QuickShooter : Impostor
     {
         reloadCooldown = KillCooldown;
         if (bulletCount == 0) return true;
-        cooldownOverride = AddOverride(new GameOptionOverride(Override.KillCooldown, 1));
+        AddOverride(new GameOptionOverride(Override.KillCooldown, 1));
         bulletCount--;
         return true;
     }
@@ -40,7 +40,7 @@ public class QuickShooter : Impostor
     [RoleAction(LotusActionType.OnPet)]
     public void GainBullet()
     {
-        if (reloadCooldown >= 0 || bulletCount == maxBullets) return false;
+        if (reloadCooldown >= 0 || bulletCount == maxBullets) return;
         reloadCooldown = KillCooldown;
         bulletCount++;
         MyPlayer.RpcMark(MyPlayer);
@@ -49,7 +49,7 @@ public class QuickShooter : Impostor
     [RoleAction(LotusActionType.RoundStart)]
     public void ResetBullets()
     {
-        bulletCount = keptBullets
+        bulletCount = keptBullets;
     }
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
