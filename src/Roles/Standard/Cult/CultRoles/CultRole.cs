@@ -15,7 +15,7 @@ using Lotus.Extensions;
 using Lotus.Roles.Internals;
 using UnityEngine;
 using Lotus.API.Player;
-
+/*
 namespace Lotus.Roles.RoleGroups.Undead.Roles;
 
 public class UndeadRole : Impostor
@@ -97,4 +97,4 @@ public class UndeadRole : Impostor
         base.Modify(roleModifier)
             .SpecialType(SpecialType.Undead)
             .Faction(FactionInstances.TheUndead);
-}
+}*/

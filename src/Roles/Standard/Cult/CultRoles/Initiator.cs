@@ -27,7 +27,7 @@ using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using Lotus.API.Player;
 using Lotus.GameModes.Standard;
-
+/*
 namespace LotusBloom.Roles.Standard.Cult.CultRoles;
 
 public class Initiator : CultRole
@@ -146,4 +146,4 @@ public class Initiator : CultRole
             .CanVent(false)
             .OptionOverride(new IndirectKillCooldown(convertCooldown.Duration))
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
-}
+}*/

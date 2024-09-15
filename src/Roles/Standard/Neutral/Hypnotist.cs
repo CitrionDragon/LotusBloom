@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using Lotus.API.Odyssey;
+using Lotus.API.Player;
 using Lotus.Factions;
 using Lotus.GUI.Name;
 using Lotus.GUI.Name.Components;
@@ -24,6 +25,8 @@ namespace LotusBloom.Roles.Standard.Neutral;
 
 public class Hypnotist: NeutralKillingBase
 {
+    private int backedAlivePlayers;
+    private int knownAlivePlayers;
     [NewOnSetup] private List<PlayerControl> cursedPlayers;
     [NewOnSetup] private Dictionary<byte, Remote<IndicatorComponent>> playerRemotes = null!;
 
@@ -32,6 +35,9 @@ public class Hypnotist: NeutralKillingBase
     [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
+        knownAlivePlayers = CountAlivePlayers();
+        if (knownAlivePlayers <= 3) return base.TryKill(target);
+
         if (MyPlayer.InteractWith(target, LotusInteraction.HostileInteraction.Create(this)) is InteractionResult.Halt) return false;
 
         Game.MatchData.GameHistory.AddEvent(new ManipulatedEvent(MyPlayer, target));
@@ -92,6 +98,11 @@ public class Hypnotist: NeutralKillingBase
         playerRemotes!.GetValueOrDefault(puppet.PlayerId, null)?.Delete();
         cursedPlayers.RemoveAll(p => p.PlayerId == puppet.PlayerId);
     }
+
+    [RoleAction(LotusActionType.Disconnect)]
+    [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
+    private int CountAlivePlayers() => backedAlivePlayers = Players.GetPlayers(PlayerFilter.Alive | PlayerFilter.NonPhantom).Count(p => p.PlayerId != MyPlayer.PlayerId && Relationship(p) is not Relation.FullAllies);
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(new Color(1f, 0.75f, 0.8f))
