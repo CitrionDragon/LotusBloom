@@ -13,6 +13,8 @@ using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Stock;
+using Lotus.Victory.Conditions;
+using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Logging;
@@ -25,7 +27,7 @@ using Lotus;
 
 namespace LotusBloom.Roles.Standard.Neutral;
 
-// TODO: Harbinger variant which kills everyone and is super OP or something lol
+// TODO: Harbinger variant which kills everyone and is super OP or something lol- Have this one with a sacrifice?
 public class Harbinger : TaskRoleBase
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Harbinger));
@@ -89,12 +91,21 @@ public class Harbinger : TaskRoleBase
             return;
         }
         DevLogger.Log("Completed one!!");
+        ritualCount++;
         taskCount = 0;
+        if (!MyPlayer.IsAlive()) return;
+        if (ritualCount == circleToWin) ManualWin.Activate(MyPlayer, ReasonType.SoloWinner, 999);
     }
 
     [RoleAction(LotusActionType.OnPetRelease)]
     private void CancelProgressBar() => progress = -2;
 
+    // To Add a role image you want to override GetRoleImage. Add your png and use the AssetLoader that comes with ProjectLotus.
+    /*protected override Func<Sprite> GetRoleImage()
+    {
+        // Depending on your image size, you may have to change 500 to another number. If it is too big or too small keep changing it until it looks good for you.
+        return () => AssetLoader.LoadSprite("SampleRoleAddon.assets.crewcrew.png", 500, true);
+    }*/
 
     protected override RoleModifier Modify(RoleModifier roleModifier) => roleModifier
         .RoleFlags(RoleFlag.CannotWinAlone)
@@ -109,12 +120,17 @@ public class Harbinger : TaskRoleBase
                 .BindInt(i => tasksBeforeCircle = i)
                 .ShowSubOptionPredicate(o => (int)o > 1)
                 .Build())
-            .SubOption(sub => sub.Name("Rituals until win")
+            .SubOption(sub => sub.Name("Ritual Circles Until Win")
                 .AddIntRange(1, 5, 1, 3)
                 .BindInt(r => circleToWin = r)
                 .ShowSubOptionPredicate(o => (int)o > 1)
                 .Build());
-/*
+            /*.SubOption(sub => sub.Name("Sacrifice to Win")
+                // .AddOnOffValues() I recommend using AddBoolean which is a checkmark. But AddOnOffValues is still here for decaprecation.
+                .AddBoolean()
+                .BindBool(b => makesBodiesUnreportable = b)
+                .Build())*/
+
     [Localized(nameof(Harbinger))]
     private static class Translations
     {
@@ -128,6 +144,5 @@ public class Harbinger : TaskRoleBase
             public static string RitualCirclesUntilWin = "Ritual Circles Until Win";
         }
     }
-    */
 }
 

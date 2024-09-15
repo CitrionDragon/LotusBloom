@@ -62,7 +62,7 @@ public class Hypnotist: NeutralKillingBase
                 continue;
             }
 
-            List<PlayerControl> inRangePlayers = player.GetPlayersInAbilityRangeSorted().Where(p => p.Relationship(MyPlayer) is not Relation.FullAllies).ToList();
+            List<PlayerControl> inRangePlayers = player.GetPlayersInAbilityRangeSorted().Where(p => p.Relationship(MyPlayer) is not Relation.FullAllies && p.PlayerId != MyPlayer.PlayerId).ToList();
             if (inRangePlayers.Count == 0) continue;
             PlayerControl target = inRangePlayers.GetRandom();
             ManipulatedPlayerDeathEvent playerDeathEvent = new(target, player);
