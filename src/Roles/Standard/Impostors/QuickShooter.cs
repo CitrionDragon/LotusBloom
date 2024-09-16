@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Lotus.API;
 using Lotus.API.Odyssey;
 using Lotus.API.Player;
 using Lotus.API.Vanilla.Meetings;
@@ -30,7 +31,9 @@ public class QuickShooter: Impostor
     private int maxBullets;
     private int bulletCount;
     private int keptBullets;
-    private float reloadCooldown;
+
+    [UIComponent(UI.Cooldown)]
+    private Cooldown reloadCooldown;
 
     [UIComponent(UI.Counter)]
     private string BulletCounter() => RoleUtils.Counter(bulletCount, maxBullets);
@@ -38,9 +41,11 @@ public class QuickShooter: Impostor
     [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
-        reloadCooldown = KillCooldown;
-        if (bulletCount == 0) return true;
+        reloadCooldown.Start(AUSettings.KillCooldown());
+        if (bulletCount == 0) return base.TryKill(target);
+        base.TryKill(target);
         AddOverride(new GameOptionOverride(Override.KillCooldown, 1));
+        SyncOptions();
         bulletCount--;
         return true;
     }
@@ -48,8 +53,9 @@ public class QuickShooter: Impostor
     [RoleAction(LotusActionType.OnPet)]
     public void GainBullet()
     {
-        if (reloadCooldown >= 0 || bulletCount == maxBullets) return;
-        reloadCooldown = KillCooldown;
+        if (bulletCount == maxBullets) return;
+        if (reloadCooldown.NotReady()) return;
+        reloadCooldown.Start(AUSettings.KillCooldown());
         bulletCount++;
         //MyPlayer.InteractWith(MyPlayer, FakeFatalIntent());
         MyPlayer.RpcMark(MyPlayer);
@@ -58,6 +64,7 @@ public class QuickShooter: Impostor
     [RoleAction(LotusActionType.RoundStart)]
     public void ResetBullets()
     {
+        reloadCooldown.Start(AUSettings.KillCooldown());
         if (bulletCount >= keptBullets) bulletCount = keptBullets;
     }
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
