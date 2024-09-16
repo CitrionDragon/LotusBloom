@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Lotus.API.Odyssey;
 using Lotus.API.Player;
+using Lotus.API.Vanilla.Meetings;
 using Lotus.Factions;
 using Lotus.GUI;
 using Lotus.GUI.Name;
@@ -16,6 +17,8 @@ using VentLib.Options.IO;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
+using VentLib.Utilities.Optionals;
+using VentLib.Localization.Attributes;
 using Lotus.Extensions;
 
 namespace LotusBloom.Roles.Standard.Impostors;
@@ -26,6 +29,9 @@ public class QuickShooter: Impostor
     private int bulletCount;
     private int keptBullets;
     private float reloadCooldown;
+
+    [UIComponent(UI.Counter)]
+    private string BulletCounter() => RoleUtils.Counter(bulletCount, maxBullets, RoleColor);
 
     [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)

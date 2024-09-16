@@ -5,6 +5,7 @@ using Lotus.Roles;
 using System.Collections.Generic;
 using LotusBloom.Roles.Standard;
 using LotusBloom.Roles.Standard.Neutral;
+using LotusBloom.Roles.Standard.Impostors;
 
 namespace LotusBloom;
 
