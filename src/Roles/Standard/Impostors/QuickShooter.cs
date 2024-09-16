@@ -7,10 +7,12 @@ using Lotus.Factions;
 using Lotus.GUI;
 using Lotus.GUI.Name;
 using Lotus.Options;
+using Lotus.Roles.Interactions;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Overrides;
 using Lotus.Roles.RoleGroups.Vanilla;
+using Lotus.Roles;
 using UnityEngine;
 using VentLib.Options.UI;
 using VentLib.Options.IO;
@@ -31,7 +33,7 @@ public class QuickShooter: Impostor
     private float reloadCooldown;
 
     [UIComponent(UI.Counter)]
-    private string BulletCounter() => RoleUtils.Counter(bulletCount, maxBullets, RoleColor);
+    private string BulletCounter() => RoleUtils.Counter(bulletCount, maxBullets);
 
     [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
@@ -49,13 +51,14 @@ public class QuickShooter: Impostor
         if (reloadCooldown >= 0 || bulletCount == maxBullets) return;
         reloadCooldown = KillCooldown;
         bulletCount++;
+        //MyPlayer.InteractWith(MyPlayer, FakeFatalIntent());
         MyPlayer.RpcMark(MyPlayer);
     }
 
     [RoleAction(LotusActionType.RoundStart)]
     public void ResetBullets()
     {
-        bulletCount = keptBullets;
+        if (bulletCount >= keptBullets) bulletCount = keptBullets;
     }
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
