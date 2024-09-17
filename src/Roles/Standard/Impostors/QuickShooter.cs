@@ -8,12 +8,12 @@ using Lotus.Factions;
 using Lotus.GUI;
 using Lotus.GUI.Name;
 using Lotus.Options;
+using Lotus.Roles;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Overrides;
 using Lotus.Roles.RoleGroups.Vanilla;
-using Lotus.Roles;
 using UnityEngine;
 using VentLib.Options.UI;
 using VentLib.Options.IO;
@@ -41,11 +41,11 @@ public class QuickShooter: Impostor
     [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
-        reloadCooldown.Start(AUSettings.KillCooldown());
+        KillCooldown = AUSettings.KillCooldown();
+        reloadCooldown.Start();
         if (bulletCount == 0) return base.TryKill(target);
+        KillCooldown = 1;
         base.TryKill(target);
-        AddOverride(new GameOptionOverride(Override.KillCooldown, 1));
-        SyncOptions();
         bulletCount--;
         return true;
     }
@@ -55,7 +55,7 @@ public class QuickShooter: Impostor
     {
         if (bulletCount == maxBullets) return;
         if (reloadCooldown.NotReady()) return;
-        reloadCooldown.Start(AUSettings.KillCooldown());
+        reloadCooldown.Start();
         bulletCount++;
         //MyPlayer.InteractWith(MyPlayer, FakeFatalIntent());
         MyPlayer.RpcMark(MyPlayer);
@@ -69,6 +69,10 @@ public class QuickShooter: Impostor
     }
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
+            .SubOption(sub => sub.Name("Reload Cooldown")
+                .AddFloatRange(0, 120, 2.5f, suffix: "s")
+                .BindFloat(reloadCooldown.SetDuration)
+                .Build())
             .SubOption(sub => sub.Name("Max Bullets")
                 .AddIntRange(1, 15, 1, 5)
                 .BindInt(i => maxBullets = i)
