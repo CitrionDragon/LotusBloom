@@ -5,15 +5,15 @@
 
 <h2 align="center"> <a href="https://discord.gg/projectlotus">Discord</a> | <a href="#table-of-contents">Table Of Contents</a> | <a href="https://beta.lotusau.top/">Website</a> | <a href="https://github.com/CitrionDragon/LotusBloom/releases">Latest Release (For AU 2024.9.4)</a>
 
-<h3 align="center">This is a continuation of the <a href="https://github.com/ImaMapleTree/Lotus">original Project Lotus mod</a> due to the original creator passing the project. </h3>
-<i align="center">This mod is not affiliated with Among Us or Innersloth LLC, and the content contained therein is not endorsed or otherwise sponsored by Innersloth LLC. Portions of the materials contained herein are the property of Innersloth LLC.</i>
+<h3 align="center">This is an addon for the <a href="https://github.com/Lotus-AU/LotusContinued">Project: Lotus mod</a> that adds additional roles! </h3>
+<i align="center">This mod and addon is not affiliated with Among Us or Innersloth LLC, and the content contained therein is not endorsed or otherwise sponsored by Innersloth LLC. Portions of the materials contained herein are the property of Innersloth LLC.</i>
 
 ---
-
+/*
 |        <img align="center" src="./.github/main_menu2.png">         |
 | :----------------------------------------------------------------: |
 | <u>**A screenshot of the Main Menu of Project: Lotus. (v1.1)**</u> |
-
+*/
 ## Regarding This Mod
 
 #### ⭐Please consider starring our repo if you enjoy the mod!⭐
@@ -48,8 +48,8 @@ This Mod only needs to be installed on the **Host**, which needs to be on a PC. 
 
 |                     Getting Started with Project: Lotus                     |                    Features of This Mod.                     |                    For Developers                      |
 | :-------------------------------------------------------------------------: | :----------------------------------------------------------: | :--------------------------------------------------:   |
-|   [**Converting from other mods**](https://beta.lotusuau.top/rd/convert)    |     [Templates](https://beta.lotusuau.top/rd/templates)      | [Add-On System](https://beta.lotusuau.top/dev/addons)  |
-|         [Installing the mod!](https://beta.lotusuau.top/rd/install)         |   [Custom Cosmetics](https://beta.lotusuau.top/rd/touhats)   | [VentFramework Docs](https://beta.lotusuau.top/dev/vf) |
+|   [**Converting from other mods**](https://beta.lotusau.top/rd/convert)    |     [Templates](https://beta.lotusuau.top/rd/templates)      | [Add-On System](https://beta.lotusau.top/dev/addons)  |
+|         [Installing the mod!](https://beta.lotusau.top/rd/install)         |   [Custom Cosmetics](https://beta.lotusuau.top/rd/touhats)   | [VentFramework Docs](https://beta.lotusuau.top/dev/vf) |
 | [Setting up your First Templates.](https://beta.lotusuau.top/rd/f-template) |    [User Tags/Titles](https://beta.lotusuau.top/rd/tags)     |                          .                             |
 |      [Making your first Tag!](https://beta.lotusuau.top/rd/first-tag)       | [Custom Friend System](https://beta.lotusuau.top/rd/friends) |                          .                             |
 |        [Afterthought.](https://beta.lotusuau.top/rd/gs-afterthought)        |             [Online Template Maker (Planned)](#)             |                          .                             |
