@@ -1,6 +1,3 @@
-/*<p align="center">
-  <img width="400" height="400" src="https://avatars.githubusercontent.com/u/173427715">
-</p>*/
 <h1 align="center">Lotus Bloom</h1>
 
 <h2 align="center"> <a href="https://discord.gg/projectlotus">Discord</a> | <a href="#table-of-contents">Table Of Contents</a> | <a href="https://beta.lotusau.top/">Website</a> | <a href="https://github.com/CitrionDragon/LotusBloom/releases">Latest Release (For AU 2024.9.4)</a>
@@ -9,14 +6,11 @@
 <i align="center">This mod and addon is not affiliated with Among Us or Innersloth LLC, and the content contained therein is not endorsed or otherwise sponsored by Innersloth LLC. Portions of the materials contained herein are the property of Innersloth LLC.</i>
 
 ---
-/*
-|        <img align="center" src="./.github/main_menu2.png">         |
-| :----------------------------------------------------------------: |
-| <u>**A screenshot of the Main Menu of Project: Lotus. (v1.1)**</u> |
-*/
-## Regarding This Mod
+## Regarding This Addon
 
-#### ⭐Please consider starring our repo if you enjoy the mod!⭐
+#### ⭐Please consider starring this repo if you enjoy the addon!⭐
+
+This Addon need the base Project: Lotus mod to function.
 
 This Mod only needs to be installed on the **Host**, which needs to be on a PC. Once the mod is installed, anyone on any device may join the lobby to enjoy the mod. <br>
 
@@ -34,17 +28,17 @@ This Mod only needs to be installed on the **Host**, which needs to be on a PC. 
 
 # Table of Contents.
 
-> **Note:** Most of these will link to our Website, [**lotusuau.top**](https://beta.lotusuau.top). <br>
+> [**Click here to get taken to the added roles!**](https://docs.google.com/spreadsheets/d/1X-W-04r6RekBXzcGv1hwcD8rDpq6mRLtuRQdmHBkLxQ/edit?gid=0#gid=0)
 
-> **Versión en español del sitio web.** -> [**lotusuau.top/es**](https://beta.lotusuau.top/es)<br>
+> **Project: Lotus Website:** [**lotusuau.top**](https://beta.lotusau.top). <br>
 
-> **Version française du site.** -> [**lotusuau.top/fr**](https://beta.lotusuau.top/fr)<br>
+> **Versión en español del sitio web.** -> [**lotusuau.top/es**](https://beta.lotusau.top/es)<br>
 
-> [**Click here to get taken to the roles!**](https://beta.lotusuau.top/en/roles)
->
-> - [**General Options**](https://beta.lotusuau.top/rd/options)
-> - [**Commands/Hotkeys**](https://beta.lotusuau.top/rd/commands)
-> - [**Mod Credits**](https://beta.lotusuau.top/credits)
+> **Version française du site.** -> [**lotusuau.top/fr**](https://beta.lotusau.top/fr)<br>
+
+> - [**General Options**](https://beta.lotusau.top/rd/options)
+> - [**Commands/Hotkeys**](https://beta.lotusau.top/rd/commands)
+> - [**Mod Credits**](https://beta.lotusau.top/credits)
 
 |                     Getting Started with Project: Lotus                     |                    Features of This Mod.                     |                    For Developers                      |
 | :-------------------------------------------------------------------------: | :----------------------------------------------------------: | :--------------------------------------------------:   |
