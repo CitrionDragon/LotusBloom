@@ -70,7 +70,7 @@ public class QuickShooter: Impostor
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub.Name("Reload Cooldown")
-                .AddFloatRange(0, 120, 2.5f, suffix: "s")
+                .AddFloatRange(10, 120, 2.5f, suffix: "s")
                 .BindFloat(reloadCooldown.SetDuration)
                 .Build())
             .SubOption(sub => sub.Name("Max Bullets")
@@ -79,7 +79,7 @@ public class QuickShooter: Impostor
                 .ShowSubOptionPredicate(o => (int)o > 1)
                 .Build())
             .SubOption(sub => sub.Name("Kept Bullets in Meeting")
-                .AddIntRange(1, 15, 1, 5)
+                .AddIntRange(0, 15, 1, 5)
                 .BindInt(i => keptBullets = i)
                 .ShowSubOptionPredicate(o => (int)o > 1)
                 .Build());

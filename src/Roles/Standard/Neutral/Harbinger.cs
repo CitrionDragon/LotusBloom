@@ -52,6 +52,9 @@ public class Harbinger : TaskRoleBase
     private PlayerControl trackedPlayer;
     [NewOnSetup] private List<Remote<IndicatorComponent>> components;
 
+    [NewOnSetup]
+    base.SetUp();
+
     [UIComponent(UI.Counter)]
     private string TaskCheck() => RoleUtils.Counter(taskCount, tasksBeforeCircle, RoleColor);
 
@@ -178,7 +181,7 @@ public class Harbinger : TaskRoleBase
                 .BindInt(r => circleToWin = r)
                 .ShowSubOptionPredicate(o => (int)o > 1)
                 .Build())
-            .SubOption(sub => sub.Name("Has Arrow To Target")
+            .SubOption(sub => sub.Name("Has Arrow To Sacrifice")
                 .AddBoolean()
                 .BindBool(b => hasArrowToTarget = b)
                 .Build());
@@ -196,7 +199,7 @@ public class Harbinger : TaskRoleBase
             public static string RitualCirclesUntilWin = "Ritual Circles Until Win";
 
             [Localized(nameof(HasArrowToTarget))]
-            public static string HasArrowToTarget = "Has Arrow To Target";
+            public static string HasArrowToTarget = "Has Arrow To Sacrifice";
         }
     }
 }
