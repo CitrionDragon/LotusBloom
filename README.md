@@ -30,11 +30,11 @@ This Mod only needs to be installed on the **Host**, which needs to be on a PC. 
 
 > [**Click here to get taken to the added roles!**](https://docs.google.com/spreadsheets/d/1X-W-04r6RekBXzcGv1hwcD8rDpq6mRLtuRQdmHBkLxQ/edit?gid=0#gid=0)
 
-> **Project: Lotus Website:** [**lotusuau.top**](https://beta.lotusau.top). <br>
+> **Project: Lotus Website:** [**lotusau.top**](https://beta.lotusau.top). <br>
 
-> **Versión en español del sitio web.** -> [**lotusuau.top/es**](https://beta.lotusau.top/es)<br>
+> **Versión en español del sitio web.** -> [**lotusau.top/es**](https://beta.lotusau.top/es)<br>
 
-> **Version française du site.** -> [**lotusuau.top/fr**](https://beta.lotusau.top/fr)<br>
+> **Version française du site.** -> [**lotusau.top/fr**](https://beta.lotusau.top/fr)<br>
 
 > - [**General Options**](https://beta.lotusau.top/rd/options)
 > - [**Commands/Hotkeys**](https://beta.lotusau.top/rd/commands)
@@ -42,11 +42,11 @@ This Mod only needs to be installed on the **Host**, which needs to be on a PC. 
 
 |                     Getting Started with Project: Lotus                     |                    Features of This Mod.                     |                    For Developers                      |
 | :-------------------------------------------------------------------------: | :----------------------------------------------------------: | :--------------------------------------------------:   |
-|   [**Converting from other mods**](https://beta.lotusau.top/rd/convert)    |     [Templates](https://beta.lotusuau.top/rd/templates)      | [Add-On System](https://beta.lotusau.top/dev/addons)  |
-|         [Installing the mod!](https://beta.lotusau.top/rd/install)         |   [Custom Cosmetics](https://beta.lotusuau.top/rd/touhats)   | [VentFramework Docs](https://beta.lotusuau.top/dev/vf) |
-| [Setting up your First Templates.](https://beta.lotusuau.top/rd/f-template) |    [User Tags/Titles](https://beta.lotusuau.top/rd/tags)     |                          .                             |
-|      [Making your first Tag!](https://beta.lotusuau.top/rd/first-tag)       | [Custom Friend System](https://beta.lotusuau.top/rd/friends) |                          .                             |
-|        [Afterthought.](https://beta.lotusuau.top/rd/gs-afterthought)        |             [Online Template Maker (Planned)](#)             |                          .                             |
+|   [**Converting from other mods**](https://beta.lotusau.top/rd/convert)    |     [Templates](https://beta.lotusau.top/rd/templates)      | [Add-On System](https://beta.lotusau.top/dev/addons)  |
+|         [Installing the mod!](https://beta.lotusau.top/rd/install)         |   [Custom Cosmetics](https://beta.lotusau.top/rd/touhats)   | [VentFramework Docs](https://beta.lotusau.top/dev/vf) |
+| [Setting up your First Templates.](https://beta.lotusau.top/rd/f-template) |    [User Tags/Titles](https://beta.lotusau.top/rd/tags)     |                          .                             |
+|      [Making your first Tag!](https://beta.lotusau.top/rd/first-tag)       | [Custom Friend System](https://beta.lotusau.top/rd/friends) |                          .                             |
+|        [Afterthought.](https://beta.lotusau.top/rd/gs-afterthought)        |             [Online Template Maker (Planned)](#)             |                          .                             |
 
 <br>
 <br>
