@@ -1,9 +1,9 @@
-<p align="center">
+/*<p align="center">
   <img width="400" height="400" src="https://avatars.githubusercontent.com/u/173427715">
-</p>
-<h1 align="center">Project: Lotus</h1>
+</p>*/
+<h1 align="center">Lotus Bloom</h1>
 
-<h2 align="center"> <a href="https://discord.gg/projectlotus">Discord</a> | <a href="#table-of-contents">Table Of Contents</a> | <a href="https://beta.lotusuau.top/">Website</a> | <a href="https://github.com/Lotus-AU/LotusContinued/releases/latest">Latest Release (For AU 2024.9.4)</a>
+<h2 align="center"> <a href="https://discord.gg/projectlotus">Discord</a> | <a href="#table-of-contents">Table Of Contents</a> | <a href="https://beta.lotusau.top/">Website</a> | <a href="https://github.com/CitrionDragon/LotusBloom/releases">Latest Release (For AU 2024.9.4)</a>
 
 <h3 align="center">This is a continuation of the <a href="https://github.com/ImaMapleTree/Lotus">original Project Lotus mod</a> due to the original creator passing the project. </h3>
 <i align="center">This mod is not affiliated with Among Us or Innersloth LLC, and the content contained therein is not endorsed or otherwise sponsored by Innersloth LLC. Portions of the materials contained herein are the property of Innersloth LLC.</i>
