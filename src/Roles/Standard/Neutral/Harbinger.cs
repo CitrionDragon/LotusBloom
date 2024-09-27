@@ -52,9 +52,6 @@ public class Harbinger : TaskRoleBase
     private PlayerControl trackedPlayer;
     [NewOnSetup] private List<Remote<IndicatorComponent>> components;
 
-    [NewOnSetup]
-    base.SetUp();
-
     [UIComponent(UI.Counter)]
     private string TaskCheck() => RoleUtils.Counter(taskCount, tasksBeforeCircle, RoleColor);
 

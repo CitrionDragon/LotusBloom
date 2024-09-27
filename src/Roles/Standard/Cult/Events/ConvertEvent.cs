@@ -1,6 +1,6 @@
 using Lotus.API.Odyssey;
 using Lotus.Roles.Events;
-using Lotus.Roles.RoleGroups.Undead.Roles;
+using LotusBloom.Roles.Standard.Cult.CultRoles;
 using Lotus;
 using VentLib.Utilities;
 
@@ -12,5 +12,5 @@ public class ConvertEvent : TargetedAbilityEvent
     {
     }
 
-    public override string Message() => $"{UndeadRole.UndeadColor.Colorize(Game.GetName(Player()))} turned {ModConstants.HColor2.Colorize(Game.GetName(Target()))} to the Undead.";
+    public override string Message() => $"{CultRole.CultColor.Colorize(Game.GetName(Player()))} turned {ModConstants.HColor2.Colorize(Game.GetName(Target()))} to the Cult.";
 }
