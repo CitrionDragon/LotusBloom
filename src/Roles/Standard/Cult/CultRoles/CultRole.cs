@@ -8,6 +8,7 @@ using Lotus.GUI.Name;
 using Lotus.GUI.Name.Components;
 using Lotus.GUI.Name.Holders;
 using Lotus.GUI.Name.Interfaces;
+using Lotus.Roles;
 using Lotus.Roles.Internals.Enums;
 using LotusBloom.Roles.Standard.Cult.Events;
 using Lotus.Roles.RoleGroups.Vanilla;
@@ -37,7 +38,7 @@ public class CultRole : Impostor
         viewers.ForEach(v => nameModel.GetComponentHolder<RoleHolder>()[0].AddViewer(v));
 
         CustomRole role = target.PrimaryRole();
-        role.Faction = new Cult.initiated(role.Faction, indicatorComponent);
+        role.Faction = new Cultist.Initiated(role.Faction, indicatorComponent);
         role.SpecialType = SpecialType.Undead;
         Game.MatchData.GameHistory.AddEvent(new ConvertEvent(MyPlayer, target));
     }
@@ -49,7 +50,7 @@ public class CultRole : Impostor
 
         // LiveString undeadPlayerName = new(target.name, UndeadColor);
 
-        if (target.PrimaryRole().Faction is Cult.Initiated unconverted)
+        if (target.PrimaryRole().Faction is Cultist.Initiated unconverted)
         {
             IndicatorComponent oldComponent = unconverted.UnconvertedName;
             // oldComponent.SetMainText(undeadPlayerName);
@@ -61,20 +62,20 @@ public class CultRole : Impostor
             target.NameModel().GetComponentHolder<IndicatorHolder>().Add(newComponent);
         }
 
-        target.PrimaryRole().Faction = FactionInstances.Cult;
+        target.PrimaryRole().Faction = FactionInstances.Cultist;
         undead.ForEach(p =>
         {
-            log.Debug($"Cult namemodel update - {p.GetNameWithRole()}");
+            //log.Debug($"Cult namemodel update - {p.GetNameWithRole()}");
             INameModel nameModel = p.NameModel();
             nameModel.GetComponentHolder<RoleHolder>()[0].AddViewer(target);
 
             switch (p.PrimaryRole().Faction)
             {
-                case Cult.Converted converted:
+                case Cultist.Converted converted:
                     converted.NameComponent.AddViewer(target);
                     break;
-                case Cult.Initiated:
-                    log.Debug($"initiated {nameModel.GetComponentHolder<IndicatorHolder>().Count}");
+                case Cultist.Initiated:
+                    //log.Debug($"initiated {nameModel.GetComponentHolder<IndicatorHolder>().Count}");
                     nameModel.GetComponentHolder<IndicatorHolder>()[0].AddViewer(target);
                     break;
                 default: // origin
@@ -85,16 +86,16 @@ public class CultRole : Impostor
         Game.MatchData.GameHistory.AddEvent(new InitiateEvent(MyPlayer, target));
     }
 
-    protected static bool IsUnconvertedCult(PlayerControl player) => player.PrimaryRole().Faction is Cult.Initiated;
+    protected static bool IsUnconvertedCult(PlayerControl player) => player.PrimaryRole().Faction is Cultist.Initiated;
     protected static bool IsConvertedCult(PlayerControl player)
     {
         IFaction faction = player.PrimaryRole().Faction;
-        if (faction is not Cult) return false;
-        return faction is not Cult.Initiated;
+        if (faction is not Cultist) return false;
+        return faction is not Cultist.Initiated;
     }
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
-            .SpecialType(SpecialType.Cult)
-            .Faction(FactionInstances.Cult);
+            .SpecialType(SpecialType.Cultist)
+            .Faction(FactionInstances.Cultist);
 }

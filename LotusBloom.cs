@@ -21,6 +21,7 @@ public class LotusBloom: LotusAddon
 
         // Register roles
         ExportCustomRoles(allRoles, typeof(StandardGameMode));
+        ExportFactions(new Cultist());
     }
 
     public override string Name { get; } = "Lotus Bloom Addon Addon";
