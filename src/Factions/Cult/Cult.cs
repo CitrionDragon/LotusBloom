@@ -1,10 +1,11 @@
+using Lotus.Factions;
 using Lotus.Factions.Crew;
 using Lotus.Factions.Impostors;
 using Lotus.Factions.Interfaces;
 using Lotus.Factions.Neutrals;
 using UnityEngine;
 
-namespace Lotus.Factions.Cult;
+namespace LotusBloom.Factions.Cult;
 
 public abstract partial class Cultist : Faction<Cultist>
 {
