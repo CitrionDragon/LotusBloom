@@ -28,7 +28,7 @@ using VentLib.Utilities.Optionals;
 using VentLib.Options.UI;
 using Lotus;
 
-namespace LotusBloom.Roles.Standard.Neutral;
+namespace LotusBloom.Roles.Standard.Neutral.Passive;
 
 // TODO: Harbinger variant which kills everyone and is super OP or something lol- Have this one with a sacrifice?
 public class Harbinger : TaskRoleBase
@@ -167,7 +167,7 @@ public class Harbinger : TaskRoleBase
         .SpecialType(SpecialType.Neutral);
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
-        base.RegisterOptions(optionStream)
+        AddTaskOverrideOptions(base.RegisterOptions(optionStream)
             .SubOption(sub => sub.Name("Tasks Per Ritual Circle")
                 .AddIntRange(1, 5, 1, 3)
                 .BindInt(i => tasksBeforeCircle = i)
@@ -181,7 +181,7 @@ public class Harbinger : TaskRoleBase
             .SubOption(sub => sub.Name("Has Arrow To Sacrifice")
                 .AddBoolean()
                 .BindBool(b => hasArrowToTarget = b)
-                .Build());
+                .Build()));
 
     [Localized(nameof(Harbinger))]
     private static class Translations

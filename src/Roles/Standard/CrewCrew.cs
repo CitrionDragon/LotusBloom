@@ -68,12 +68,13 @@ public class CrewCrew: Crewmate // There are a couple built-in role types you ca
     }
 
     // To Add a role image you want to override GetRoleImage. Add your png and use the AssetLoader that comes with ProjectLotus.
+    /*
     protected override Func<Sprite> GetRoleImage()
     {
         // Depending on your image size, you may have to change 500 to another number. If it is too big or too small keep changing it until it looks good for you.
         return () => AssetLoader.LoadSprite("SampleRoleAddon.assets.crewcrew.png", 500, true);
     }
-
+*/
     private bool CheckWinCondition() => grabbedPlayers.Count >= reportedPlayersBeforeWin;
 
     // This registers the options in the option menu

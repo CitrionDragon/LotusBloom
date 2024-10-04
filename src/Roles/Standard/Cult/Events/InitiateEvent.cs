@@ -3,6 +3,7 @@ using Lotus.Roles.Events;
 using LotusBloom.Roles.Standard.Cult.CultRoles;
 using Lotus.API;
 using VentLib.Utilities;
+using Lotus;
 
 namespace LotusBloom.Roles.Standard.Cult.Events;
 

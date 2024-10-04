@@ -62,7 +62,7 @@ public class CultRole : Impostor
             target.NameModel().GetComponentHolder<IndicatorHolder>().Add(newComponent);
         }
 
-        target.PrimaryRole().Faction = FactionInstances.Cultist;
+        //target.PrimaryRole().Faction = FactionInstances.Cultist;
         undead.ForEach(p =>
         {
             //log.Debug($"Cult namemodel update - {p.GetNameWithRole()}");
@@ -79,7 +79,7 @@ public class CultRole : Impostor
                     nameModel.GetComponentHolder<IndicatorHolder>()[0].AddViewer(target);
                     break;
                 default: // origin
-                    nameModel.GetComponentHolder<IndicatorHolder>().Add(new IndicatorComponent(new LiveString("●", CultColor), [GameState.Roaming, GameState.InMeeting], ViewMode.Replace, viewers: () => viewers));
+                    //nameModel.GetComponentHolder<IndicatorHolder>().Add(new IndicatorComponent(new LiveString("●", CultColor), [GameState.Roaming, GameState.InMeeting], ViewMode.Replace, viewers: () => viewers));
                     break;
             }
         });
@@ -95,7 +95,7 @@ public class CultRole : Impostor
     }
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        base.Modify(roleModifier)
-            .SpecialType(SpecialType.Cultist)
-            .Faction(FactionInstances.Cultist);
+        base.Modify(roleModifier);
+            //.SpecialType(SpecialType.Cultist)
+            //.Faction(FactionInstances.Cultist);
 }
