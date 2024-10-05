@@ -95,7 +95,7 @@ public class CultRole : Impostor
     }
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        base.Modify(roleModifier);
-            //.SpecialType(SpecialType.Cultist)
-            //.Faction(FactionInstances.Cultist);
+        base.Modify(roleModifier)
+            .SpecialType(SpecialType.NeutralKilling)
+            .Faction(FactionInstances.GetExternalFaction(typeof(Cultist.Origin)));
 }

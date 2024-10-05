@@ -9,6 +9,7 @@ using LotusBloom.Roles.Standard.Neutral.Passive;
 using LotusBloom.Roles.Standard.Impostors;
 using LotusBloom.Roles.Standard.Impostors.Madmates;
 using LotusBloom.Roles.Standard.Crewmates;
+using LotusBloom.Factions.Cult;
 
 namespace LotusBloom;
 
@@ -24,7 +25,7 @@ public class LotusBloom: LotusAddon
 
         // Register roles
         ExportCustomRoles(allRoles, typeof(StandardGameMode));
-        //ExportFactions(new Cultist());
+        ExportFactions(new Cultist.Origin());
     }
 
     public override string Name { get; } = "Lotus Bloom Addon Addon";
