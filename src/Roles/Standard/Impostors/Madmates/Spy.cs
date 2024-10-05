@@ -97,7 +97,7 @@ public class Spy: MadCrewmate
                 return _bloomColor.Colorize("✿");
             });
 
-            //player.NameModel().GCH<CounterHolder>().Add(new CounterComponent(ls, Game.IgnStates, ViewMode.Additive, MyPlayer));
+            player.NameModel().GCH<CounterHolder>().Add(new CounterComponent(ls, Game.InGameStates, ViewMode.Additive, MyPlayer));
             return 1;
         });
 
