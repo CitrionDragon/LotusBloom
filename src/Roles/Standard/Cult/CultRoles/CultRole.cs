@@ -48,7 +48,7 @@ public class CultRole : Impostor
         List<PlayerControl> undead = Players.GetAlivePlayers().Where(IsConvertedCult).ToList();
         List<PlayerControl> viewers = new() { target };
 
-        // LiveString undeadPlayerName = new(target.name, UndeadColor);
+        LiveString undeadPlayerName = new(target.name, CultColor);
 
         if (target.PrimaryRole().Faction is Cultist.Initiated unconverted)
         {
@@ -62,7 +62,7 @@ public class CultRole : Impostor
             target.NameModel().GetComponentHolder<IndicatorHolder>().Add(newComponent);
         }
 
-        //target.PrimaryRole().Faction = FactionInstances.Cultist;
+        target.PrimaryRole().Faction = FactionInstances.GetExternalFaction(typeof(Cultist.Origin));
         undead.ForEach(p =>
         {
             //log.Debug($"Cult namemodel update - {p.GetNameWithRole()}");

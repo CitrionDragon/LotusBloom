@@ -86,7 +86,7 @@ public class Scrapper: Engineer
         if (hasRevealer) return RoleColor.Colorize("Role Revealer Ready") + " " + _colorizedScrap.Formatted(scrapAmount);
         return _colorizedScrap.Formatted(scrapAmount) +  (knifeCooldown.IsReady() ? "" : Color.white.Colorize(" (" + knifeCooldown + "s)"));
     }
-
+    
     [UIComponent(UI.Name, ViewMode.Absolute, GameState.InMeeting)]
     private string CustomNameIndicator()
     {

@@ -1,27 +1,11 @@
-using System.Collections.Generic;
-using System.Linq;
 using Lotus.API;
-using Lotus.API.Odyssey;
-using Lotus.API.Player;
-using Lotus.API.Vanilla.Meetings;
-using Lotus.Factions;
 using Lotus.GUI;
 using Lotus.GUI.Name;
-using Lotus.Options;
 using Lotus.Roles;
-using Lotus.Roles.Interactions;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles.Overrides;
 using Lotus.Roles.RoleGroups.Vanilla;
-using UnityEngine;
 using VentLib.Options.UI;
-using VentLib.Options.IO;
-using VentLib.Utilities;
-using VentLib.Utilities.Collections;
-using VentLib.Utilities.Extensions;
-using VentLib.Utilities.Optionals;
-using VentLib.Localization.Attributes;
 using Lotus.Extensions;
 
 namespace LotusBloom.Roles.Standard.Impostors;
@@ -57,7 +41,6 @@ public class QuickShooter: Impostor
         if (reloadCooldown.NotReady()) return;
         reloadCooldown.Start();
         bulletCount++;
-        //MyPlayer.InteractWith(MyPlayer, FakeFatalIntent());
         MyPlayer.RpcMark(MyPlayer);
     }
 

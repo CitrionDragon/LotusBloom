@@ -3,7 +3,7 @@ using System.Linq;
 using Lotus.API;
 using Lotus.API.Odyssey;
 using Lotus.Factions;
-using Lotus.Factions.Undead;
+using Lotus.Factions.Crew;
 using Lotus.GUI;
 using Lotus.GUI.Name;
 using Lotus.GUI.Name.Components;
@@ -27,27 +27,57 @@ using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using Lotus.API.Player;
 using Lotus.GameModes.Standard;
-/*
+using Lotus.Roles;
+using Lotus.Factions.Neutrals;
+using Lotus.Factions.Impostors;
+using Lotus.Factions.Crew;
+using System.Xml.Serialization;
+
 namespace LotusBloom.Roles.Standard.Cult.CultRoles;
 
 public class Initiator : CultRole
 {
-    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Necromancer));
-    private static Deathknight _deathknight = new Deathknight();
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Initiator));
 
     [UIComponent(UI.Cooldown)]
     private Cooldown convertCooldown;
-    private bool isFirstConvert = true;
-    private bool immuneToPartialConverted;
 
-    private Deathknight? myDeathknight;
-    private CustomRole deathknightOriginal = null!;
+    private int backedAlivePlayers;
+    private int knownAlivePlayers;
+    private int initiatedPlayers;
+
     private bool disableWinCheck;
+    private bool changeInMeeting;
+    private static readonly CultLeader CultLeader = new();
 
     protected override void Setup(PlayerControl player)
     {
         base.Setup(player);
+        RelatedRoles.Add(typeof(CultLeader));
         Game.GetWinDelegate().AddSubscriber(DenyWinConditions);
+    }
+
+    [UIComponent(UI.Counter)]
+    private string CultCounter() => RoleUtils.Counter(initiatedPlayers, knownAlivePlayers);
+
+    [RoleAction(LotusActionType.Disconnect)]
+    [RoleAction(LotusActionType.PlayerDeath)]
+    private int CountAlivePlayers() => backedAlivePlayers = Players.GetPlayers(PlayerFilter.Alive | PlayerFilter.Neutral).Count(p => p.PlayerId != MyPlayer.PlayerId && Relationship(p) is not Relation.FullAllies);
+    private int CountInitiatedPlayers() => initiatedPlayers = Players.GetPlayers(PlayerFilter.Alive | PlayerFilter.Neutral).Count(p => p.PlayerId != MyPlayer.PlayerId && Relationship(p) is Relation.SharedWinners);
+
+    [RoleAction(LotusActionType.RoundStart)]
+    protected override void PostSetup()
+    {
+        knownAlivePlayers = CountAlivePlayers();
+        CountInitiatedPlayers();
+    }
+
+    [RoleAction(LotusActionType.RoundStart)]
+    private void ChangeRole()
+    {
+        knownAlivePlayers = CountAlivePlayers();
+        CountInitiatedPlayers();
+        if (initiatedPlayers >= backedAlivePlayers) StandardGameMode.Instance.Assign(MyPlayer, CultLeader);
     }
 
     [RoleAction(LotusActionType.Attack)]
@@ -55,10 +85,13 @@ public class Initiator : CultRole
     {
         if (target == null) return false;
         if (MyPlayer.InteractWith(target, LotusInteraction.HostileInteraction.Create(this)) is InteractionResult.Halt) return false;
+        CustomRole role = target.PrimaryRole();
+        if (role.SpecialType is not SpecialType.Neutral && role.SpecialType is not SpecialType.NeutralKilling) return false;
         MyPlayer.RpcMark(target);
-        log.Debug($"Is first convert? {isFirstConvert} - {target.GetNameWithRole()}");
-        if (isFirstConvert) return ConvertToDeathknight(target);
-        ConvertToUndead(target);
+        ConvertToCult(target);
+        CountInitiatedPlayers();
+        if (initiatedPlayers < backedAlivePlayers || changeInMeeting) return false;
+        StandardGameMode.Instance.Assign(MyPlayer, CultLeader);
         return false;
     }
 
@@ -66,53 +99,8 @@ public class Initiator : CultRole
     private void NecromancerImmunity(PlayerControl actor, Interaction interaction, ActionHandle handle)
     {
         if (interaction.Intent is not (IHostileIntent or IFatalIntent)) return;
-        if (IsConvertedUndead(actor)) handle.Cancel();
-        else if (immuneToPartialConverted && IsUnconvertedUndead(actor)) handle.Cancel();
-    }
-
-    // TODO: cooldown
-    [RoleAction(LotusActionType.OnPet)]
-    private void NecromancerConvertPet()
-    {
-        if (convertCooldown.NotReady()) return;
-        convertCooldown.Start();
-        NecromancerConvert(MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrOptional().OrElse(null!));
-    }
-
-    [RoleAction(LotusActionType.PlayerDeath)]
-    private void NecromancerDeath()
-    {
-        if (myDeathknight == null || !myDeathknight.MyPlayer.IsAlive() || !myDeathknight.CanBecomeNecromancer) return;
-        PlayerControl player = myDeathknight.MyPlayer;
-        player.GetSubroles().Remove(deathknightOriginal);
-        myDeathknight = null;
-        player.NameModel().GetComponentHolder<CooldownHolder>().Clear();
-        player.NameModel().GetComponentHolder<CooldownHolder>().Add(new CooldownComponent(convertCooldown, GameState.Roaming, ViewMode.Additive, viewers: player));
-
-        StandardGameMode.Instance.Assign(player, this);
-        Necromancer necromancer = player.PrimaryRole<Necromancer>()!;
-        necromancer.isFirstConvert = false;
-        Game.MatchData.GameHistory.AddEvent(new RoleChangeEvent(player, necromancer));
-        disableWinCheck = true;
-    }
-
-    private bool ConvertToDeathknight(PlayerControl target)
-    {
-        isFirstConvert = false;
-
-        ConvertToUndead(target);
-        InitiateUndead(target);
-
-        deathknightOriginal = target.PrimaryRole();
-        Game.MatchData.Roles.AddSubrole(target.PlayerId, deathknightOriginal);
-        StandardGameMode.Instance.Assign(target, _deathknight);
-        myDeathknight = target.PrimaryRole<Deathknight>();
-        target.NameModel().GetComponentHolder<RoleHolder>()[^1]
-            .SetViewerSupplier(() => Players.GetAllPlayers().Where(p => p.PlayerId == target.PlayerId || p.Relationship(target) is Relation.FullAllies).ToList());
-
-        log.Fatal($"Indicator count 22: {target.NameModel().GetComponentHolder<IndicatorHolder>().Count}");
-        Game.MatchData.GameHistory.AddEvent(new RoleChangeEvent(target, _deathknight));
-        return false;
+        if (IsConvertedCult(actor)) handle.Cancel();
+        else if (IsUnconvertedCult(actor)) handle.Cancel();
     }
 
     private void DenyWinConditions(WinDelegate winDelegate)
@@ -120,11 +108,11 @@ public class Initiator : CultRole
         if (disableWinCheck) return;
         List<PlayerControl> winners = winDelegate.GetWinners();
         if (winners.Any(p => p.PlayerId == MyPlayer.PlayerId)) return;
-        List<PlayerControl> undeadWinners = winners.Where(p => p.PrimaryRole().Faction is TheUndead).ToList();
+        List<PlayerControl> undeadWinners = winners.Where(p => p.PrimaryRole().Faction is CultRole).ToList();
 
-        if (undeadWinners.Count(IsConvertedUndead) == winners.Count) winDelegate.CancelGameWin();
+        if (undeadWinners.Count(IsConvertedCult) == winners.Count) winDelegate.CancelGameWin();
         else if (undeadWinners.Count == winners.Count && MyPlayer.IsAlive()) winDelegate.CancelGameWin();
-        else undeadWinners.Where(tc => IsConvertedUndead(tc) || MyPlayer.IsAlive() && IsUnconvertedUndead(tc)).ForEach(uw => winners.Remove(uw));
+        else undeadWinners.Where(tc => IsConvertedCult(tc) || MyPlayer.IsAlive() && IsUnconvertedCult(tc)).ForEach(uw => winners.Remove(uw));
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
@@ -133,17 +121,17 @@ public class Initiator : CultRole
                 .AddFloatRange(15f, 120f, 5f, 9, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(convertCooldown.SetDuration)
                 .Build())
-            .SubOption(sub => sub.Name("Immune to Partially Converted")
+            .SubOption(sub => sub.Name("Change Role in Meeting")
                 .AddOnOffValues()
-                .BindBool(b => immuneToPartialConverted = b)
+                .BindBool(b => changeInMeeting = b)
                 .Build());
-
-    protected override List<CustomRole> LinkedRoles() => base.LinkedRoles().Concat(new List<CustomRole>() { _deathknight }).ToList();
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
-            .RoleColor(new Color(0.61f, 0.53f, 0.67f))
+            .RoleColor(new Color(0.8f, 0.36f, 0.8f))
             .CanVent(false)
             .OptionOverride(new IndirectKillCooldown(convertCooldown.Duration))
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
-}*/
+
+    protected override List<CustomRole> LinkedRoles() => new() {CultLeader};
+}

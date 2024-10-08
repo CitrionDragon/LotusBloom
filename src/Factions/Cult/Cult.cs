@@ -24,5 +24,5 @@ public abstract partial class Cultist : Faction<Cultist>
         };
     }
 
-    public override Color Color => new(0.59f, 0.76f, 0.36f);
+    public override Color Color => new(0.8f, 0.36f, 0.8f);
 }
