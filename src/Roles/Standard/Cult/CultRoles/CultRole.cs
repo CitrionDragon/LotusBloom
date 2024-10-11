@@ -62,7 +62,7 @@ public class CultRole : Impostor
             target.NameModel().GetComponentHolder<IndicatorHolder>().Add(newComponent);
         }
 
-        target.PrimaryRole().Faction = FactionInstances.GetExternalFaction(typeof(Cultist.Origin));
+        target.PrimaryRole().Faction = FactionInstances.GetExternalFaction(LotusBloom.Instance.FactionTypes["Cultist.Origin"]);
         undead.ForEach(p =>
         {
             //log.Debug($"Cult namemodel update - {p.GetNameWithRole()}");
@@ -97,5 +97,5 @@ public class CultRole : Impostor
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .SpecialType(SpecialType.NeutralKilling)
-            .Faction(FactionInstances.GetExternalFaction(typeof(Cultist.Origin)));
+            .Faction(FactionInstances.GetExternalFaction(LotusBloom.Instance.FactionTypes["Cultist.Origin"]));
 }
