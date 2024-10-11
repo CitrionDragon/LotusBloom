@@ -22,7 +22,7 @@ public class LotusBloom: LotusAddon
 {
     public static LotusBloom Instance = null!;
 
-    public Dictionary<string, Type?> FactionTypes = new()
+    public static Dictionary<string, Type?> FactionTypes = new()
     {
         {"Cultist.Origin", null}
     };
