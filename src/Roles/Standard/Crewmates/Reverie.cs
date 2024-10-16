@@ -19,7 +19,6 @@ using Lotus.Roles.Events;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Logging;
-//using VentLib.Options.Game;
 using VentLib.Options.UI;
 using VentLib.Options.IO;
 using VentLib.Utilities;

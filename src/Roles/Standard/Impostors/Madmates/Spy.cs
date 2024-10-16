@@ -26,6 +26,11 @@ using VentLib.Networking.RPC;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Options.UI;
+using InnerNet;
+using Lotus.Factions.Impostors;
+using VentLib.Utilities.Optionals;
+using Lotus.Factions;
+using HarmonyLib;
 
 namespace LotusBloom.Roles.Standard.Impostors.Madmates;
 
@@ -39,9 +44,13 @@ public class Spy: MadCrewmate
     private static Color _bloomColor = new(1f, 0.63f, 0.7f);
 
     private float bloomTime;
-    public int bloomsBeforeReveal;
-    private bool revealOnBloom;
-
+    public int bloomsBeforeReveal=2;
+    private bool revealOnBloom=true;
+    private int tasksForFaction;
+    private bool rolerevealed;
+    private bool factionrevealed;
+    [NewOnSetup] private List<byte> playerrolerevealed = null!;
+    [NewOnSetup] private List<byte> playerfactionrevealed = null!;
     [NewOnSetup] private Dictionary<byte, int> bloomCounts = new();
     [NewOnSetup] private HashSet<byte> blooming = new();
     [NewOnSetup] private Dictionary<byte, List<byte>> revealedPlayers = new();
@@ -57,15 +66,62 @@ public class Spy: MadCrewmate
         if (closestPlayer == null) return;
         if (blooming.Contains(closestPlayer.PlayerId)) return;
         bloomCooldown.Start();
-
-        if (bloomCounts.GetValueOrDefault(closestPlayer.PlayerId) >= bloomsBeforeReveal)
+/*
+        if (bloomCounts.GetValueOrDefault(closestPlayer.PlayerId) >= 2)
         {
             RevealPlayer(closestPlayer);
             return;
         }
-
+        else if (bloomCounts.GetValueOrDefault(closestPlayer.PlayerId) == 1)
+        {
+            RevealFaction(closestPlayer);
+            return;
+        }
+*/
         RpcV3.Immediate(closestPlayer.NetId, RpcCalls.SetScanner, SendOption.None).Write(true).Write(++MyPlayer.scannerCount).Send(MyPlayer.GetClientId());
         Async.Schedule(() => FinishBloom(closestPlayer.PlayerId), bloomTime);
+    }
+
+    protected override void OnTaskComplete(Optional<NormalPlayerTask> _)
+    {
+        if (TasksComplete == tasksForFaction)
+        {
+            foreach (PlayerControl player in playerfactionrevealed)
+            {
+                Color color=Color.gray;
+                CustomRole role = player.PrimaryRole();
+                if (role.SpecialType is not SpecialType.Neutral && role.SpecialType is not SpecialType.NeutralKilling)
+                {
+                    if (role.Faction.GetType() == typeof(ImpostorFaction)) color=Color.red;
+                    else
+                    {
+                        color=Color.cyan;
+                    }
+                }
+                PlayerControl[] viewers = true
+                ? Players.GetPlayers().Where(p => !p.IsAlive() || Relationship(p) is Relation.FullAllies).ToArray()
+                : new [] { MyPlayer };
+                foreach (PlayerControl ally in viewers)
+                {
+                    NameComponent nameComponent = new(new LiveString(player.name, color), Game.InGameStates, ViewMode.Replace, ally);
+                    player.NameModel().GetComponentHolder<NameHolder>().Add(nameComponent);
+                }
+            }
+            factionrevealed=true;
+        }
+        if (!HasAllTasksComplete) return;
+        foreach (PlayerControl player in playerrolerevealed)
+        {
+            PlayerControl[] viewers = true
+            ? Players.GetPlayers().Where(p => !p.IsAlive() || Relationship(p) is Relation.FullAllies).ToArray()
+            : new [] { MyPlayer };
+            foreach (PlayerControl ally in viewers)
+            {
+                player.NameModel().GCH<RoleHolder>().Last().AddViewer(ally);
+                revealedPlayers.GetOrCompute(player.PlayerId, () => new List<byte>()).Add(ally.PlayerId);
+            }
+        }
+        rolerevealed=true;
     }
 
     private void RevealPlayer(PlayerControl player)
@@ -78,9 +134,48 @@ public class Spy: MadCrewmate
         if (viewer == MyPlayer) _rolesRevealed.Update(MyPlayer.UniquePlayerId(), i => i + 1);
         if (viewer == null) return;
         roleHolder.Last().AddViewer(viewer);
+        playerrolerevealed.Add(player.PlayerId);
         revealedPlayers.GetOrCompute(player.PlayerId, () => new List<byte>()).Add(viewer.PlayerId);
+        if (rolerevealed)
+        {
+            PlayerControl[] viewers = true
+            ? Players.GetPlayers().Where(p => !p.IsAlive() || Relationship(p) is Relation.FullAllies).ToArray()
+            : new [] { MyPlayer };
+            foreach (PlayerControl ally in viewers)
+            {
+                player.NameModel().GCH<RoleHolder>().Last().AddViewer(ally);
+                revealedPlayers.GetOrCompute(player.PlayerId, () => new List<byte>()).Add(ally.PlayerId);
+            }
+        }
     }
 
+    private void RevealFaction(PlayerControl player)
+    {
+        Color color=Color.gray;
+        CustomRole role = player.PrimaryRole();
+        if (role.SpecialType is not SpecialType.Neutral || role.SpecialType is not SpecialType.NeutralKilling)
+        {
+            if (role.Faction.GetType() == typeof(ImpostorFaction)) color=Color.red;
+            else
+            {
+                color=Color.cyan;
+            }
+        }
+        playerfactionrevealed.Add(player.PlayerId);
+        NameComponent nameComponent = new(new LiveString(player.name, color), Game.InGameStates, ViewMode.Replace, MyPlayer);
+        player.NameModel().GetComponentHolder<NameHolder>().Add(nameComponent);
+        if (factionrevealed)
+        {
+            PlayerControl[] viewers = true
+            ? Players.GetPlayers().Where(p => !p.IsAlive() || Relationship(p) is Relation.FullAllies).ToArray()
+            : new [] { MyPlayer };
+            foreach (PlayerControl ally in viewers)
+            {
+                NameComponent nameComponent2 = new(new LiveString(player.name, color), Game.InGameStates, ViewMode.Replace, ally);
+                player.NameModel().GetComponentHolder<NameHolder>().Add(nameComponent2);
+            }
+        }
+    }
     private void FinishBloom(byte playerId)
     {
         blooming.Remove(playerId);
@@ -101,10 +196,26 @@ public class Spy: MadCrewmate
             return 1;
         });
 
+        if (count==1)
+        {
+            RevealFaction(player);
+        }
+
         if (!revealOnBloom || count < bloomsBeforeReveal) return;
 
         player.NameModel().GCH<RoleHolder>().Last().AddViewer(MyPlayer);
         revealedPlayers.GetOrCompute(player.PlayerId, () => new List<byte>()).Add(MyPlayer.PlayerId);
+        if (rolerevealed)
+        {
+            PlayerControl[] viewers = true
+            ? Players.GetPlayers().Where(p => !p.IsAlive() || Relationship(p) is Relation.FullAllies).ToArray()
+            : new [] { MyPlayer };
+            foreach (PlayerControl ally in viewers)
+            {
+                player.NameModel().GCH<RoleHolder>().Last().AddViewer(ally);
+                revealedPlayers.GetOrCompute(player.PlayerId, () => new List<byte>()).Add(ally.PlayerId);
+            }
+        }
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
@@ -119,17 +230,9 @@ public class Spy: MadCrewmate
                 .Build())
             .SubOption(sub => sub.Name("Tasks until Factions are revealed")//, Translations.Options.BloomsUntilRoleReveal)
                 .AddIntRange(0, 10, 1, 3)
-                .BindInt(i => bloomsBeforeReveal = i)
-                .Build())
-            .SubOption(sub => sub.Name("Can see Impostors")//, Translations.Options.RevealOnBloom)
-                .BindBool(b => revealOnBloom = b)
-                .AddOnOffValues(false)
+                .BindInt(i => tasksForFaction = i)
                 .Build());
-/*
-    protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        base.Modify(roleModifier)
-            .RoleColor(Color.red);
-*/
+
     [Localized(nameof(Spy))]
     private static class Translations
     {

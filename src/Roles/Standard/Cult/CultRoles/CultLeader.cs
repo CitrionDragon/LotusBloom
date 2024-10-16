@@ -93,12 +93,11 @@ public class CultLeader : CultRole
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
-        AddKillCooldownOptions(base.RegisterOptions(optionStream),
-            key: "Kill Cooldown", name: "Kill Cooldown")
+        AddKillCooldownOptions(base.RegisterOptions(optionStream)
             .SubOption(sub2 => sub2.Name("Limited Cultist Kill Range")
                     .BindBool(b => limitedKillRange = b)
                     .AddOnOffValues(false)
-                    .Build());
+                    .Build()));
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)

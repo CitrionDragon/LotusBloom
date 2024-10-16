@@ -72,7 +72,7 @@ public class Initiator : CultRole
         CountInitiatedPlayers();
     }
 
-    [RoleAction(LotusActionType.RoundStart)]
+    [RoleAction(LotusActionType.RoundEnd)]
     private void ChangeRole()
     {
         knownAlivePlayers = CountAlivePlayers();
@@ -114,7 +114,6 @@ public class Initiator : CultRole
         else if (undeadWinners.Count == winners.Count && MyPlayer.IsAlive()) winDelegate.CancelGameWin();
         else undeadWinners.Where(tc => IsConvertedCult(tc) || MyPlayer.IsAlive() && IsUnconvertedCult(tc)).ForEach(uw => winners.Remove(uw));
     }
-
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub.Name("Convert Cooldown")
@@ -125,13 +124,11 @@ public class Initiator : CultRole
                 .AddOnOffValues()
                 .BindBool(b => changeInMeeting = b)
                 .Build());
-
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(new Color(0.8f, 0.36f, 0.8f))
             .CanVent(false)
             .OptionOverride(new IndirectKillCooldown(convertCooldown.Duration))
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
-
     protected override List<CustomRole> LinkedRoles() => new() {CultLeader};
 }
