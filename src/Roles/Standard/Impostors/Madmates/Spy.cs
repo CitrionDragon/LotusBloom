@@ -86,8 +86,9 @@ public class Spy: MadCrewmate
     {
         if (TasksComplete == tasksForFaction)
         {
-            foreach (PlayerControl player in playerfactionrevealed)
+            foreach (byte target in playerfactionrevealed)
             {
+                PlayerControl player =Utils.GetPlayerById(target);
                 Color color=Color.gray;
                 CustomRole role = player.PrimaryRole();
                 if (role.SpecialType is not SpecialType.Neutral && role.SpecialType is not SpecialType.NeutralKilling)
@@ -98,28 +99,28 @@ public class Spy: MadCrewmate
                         color=Color.cyan;
                     }
                 }
-                PlayerControl[] viewers = true
-                ? Players.GetPlayers().Where(p => !p.IsAlive() || Relationship(p) is Relation.FullAllies).ToArray()
-                : new [] { MyPlayer };
-                foreach (PlayerControl ally in viewers)
+                PlayerControl[] viewers = Players.GetAllPlayers().Where(IsAllies).ToArray();
+                viewers.ForEach(p =>
                 {
-                    NameComponent nameComponent = new(new LiveString(player.name, color), Game.InGameStates, ViewMode.Replace, ally);
+                    NameComponent nameComponent = new(new LiveString(player.name, color), Game.InGameStates, ViewMode.Replace, p);
                     player.NameModel().GetComponentHolder<NameHolder>().Add(nameComponent);
-                }
+                });
             }
             factionrevealed=true;
         }
         if (!HasAllTasksComplete) return;
-        foreach (PlayerControl player in playerrolerevealed)
+        foreach (byte target in playerrolerevealed)
         {
-            PlayerControl[] viewers = true
-            ? Players.GetPlayers().Where(p => !p.IsAlive() || Relationship(p) is Relation.FullAllies).ToArray()
-            : new [] { MyPlayer };
-            foreach (PlayerControl ally in viewers)
+            PlayerControl player = Utils.GetPlayerById(target);
+            INameModel nameModel = player.NameModel();
+            RoleHolder roleHolder = nameModel.GCH<RoleHolder>();
+            PlayerControl[] viewers = Players.GetAllPlayers().Where(IsAllies).ToArray();
+            viewers.ForEach(p =>
             {
-                player.NameModel().GCH<RoleHolder>().Last().AddViewer(ally);
-                revealedPlayers.GetOrCompute(player.PlayerId, () => new List<byte>()).Add(ally.PlayerId);
-            }
+                roleHolder.Last().AddViewer(p);
+                player.NameModel().GCH<RoleHolder>().Last().AddViewer(p);
+                revealedPlayers.GetOrCompute(player.PlayerId, () => new List<byte>()).Add(p.PlayerId);
+            });
         }
         rolerevealed=true;
     }
@@ -138,14 +139,13 @@ public class Spy: MadCrewmate
         revealedPlayers.GetOrCompute(player.PlayerId, () => new List<byte>()).Add(viewer.PlayerId);
         if (rolerevealed)
         {
-            PlayerControl[] viewers = true
-            ? Players.GetPlayers().Where(p => !p.IsAlive() || Relationship(p) is Relation.FullAllies).ToArray()
-            : new [] { MyPlayer };
-            foreach (PlayerControl ally in viewers)
+            PlayerControl[] viewers = Players.GetAllPlayers().Where(IsAllies).ToArray();
+            viewers.ForEach(p =>
             {
-                player.NameModel().GCH<RoleHolder>().Last().AddViewer(ally);
-                revealedPlayers.GetOrCompute(player.PlayerId, () => new List<byte>()).Add(ally.PlayerId);
-            }
+                roleHolder.Last().AddViewer(p);
+                player.NameModel().GCH<RoleHolder>().Last().AddViewer(p);
+                revealedPlayers.GetOrCompute(player.PlayerId, () => new List<byte>()).Add(p.PlayerId);
+            });
         }
     }
 
@@ -153,7 +153,7 @@ public class Spy: MadCrewmate
     {
         Color color=Color.gray;
         CustomRole role = player.PrimaryRole();
-        if (role.SpecialType is not SpecialType.Neutral || role.SpecialType is not SpecialType.NeutralKilling)
+        if (role.SpecialType is not SpecialType.Neutral && role.SpecialType is not SpecialType.NeutralKilling)
         {
             if (role.Faction.GetType() == typeof(ImpostorFaction)) color=Color.red;
             else
@@ -166,15 +166,21 @@ public class Spy: MadCrewmate
         player.NameModel().GetComponentHolder<NameHolder>().Add(nameComponent);
         if (factionrevealed)
         {
-            PlayerControl[] viewers = true
-            ? Players.GetPlayers().Where(p => !p.IsAlive() || Relationship(p) is Relation.FullAllies).ToArray()
-            : new [] { MyPlayer };
-            foreach (PlayerControl ally in viewers)
+            PlayerControl[] viewers = Players.GetAllPlayers().Where(IsAllies).ToArray();
+            viewers.ForEach(p =>
             {
-                NameComponent nameComponent2 = new(new LiveString(player.name, color), Game.InGameStates, ViewMode.Replace, ally);
+                NameComponent nameComponent2 = new(new LiveString(player.name, color), Game.InGameStates, ViewMode.Replace, p);
                 player.NameModel().GetComponentHolder<NameHolder>().Add(nameComponent2);
-            }
+            });
         }
+    }
+    private bool IsAllies(PlayerControl player)
+    {
+        if (Relationship(player) is Relation.FullAllies) return true;
+        //if (Relationship(player) is Relation.SharedWinners) return true;
+        //CustomRole role = player.PrimaryRole();
+        //if (role.Faction is ImpostorFaction) return true;
+        return false;
     }
     private void FinishBloom(byte playerId)
     {
@@ -201,20 +207,19 @@ public class Spy: MadCrewmate
             RevealFaction(player);
         }
 
-        if (!revealOnBloom || count < bloomsBeforeReveal) return;
-
+        if (count < bloomsBeforeReveal) return;
+        playerrolerevealed.Add(player.PlayerId);
         player.NameModel().GCH<RoleHolder>().Last().AddViewer(MyPlayer);
         revealedPlayers.GetOrCompute(player.PlayerId, () => new List<byte>()).Add(MyPlayer.PlayerId);
         if (rolerevealed)
         {
-            PlayerControl[] viewers = true
-            ? Players.GetPlayers().Where(p => !p.IsAlive() || Relationship(p) is Relation.FullAllies).ToArray()
-            : new [] { MyPlayer };
-            foreach (PlayerControl ally in viewers)
+            PlayerControl[] viewers = Players.GetAllPlayers().Where(IsAllies).ToArray();
+            viewers.ForEach(p =>
             {
-                player.NameModel().GCH<RoleHolder>().Last().AddViewer(ally);
-                revealedPlayers.GetOrCompute(player.PlayerId, () => new List<byte>()).Add(ally.PlayerId);
-            }
+                //roleHolder.Last().AddViewer(p);
+                player.NameModel().GCH<RoleHolder>().Last().AddViewer(p);
+                revealedPlayers.GetOrCompute(player.PlayerId, () => new List<byte>()).Add(p.PlayerId);
+            });
         }
     }
 
