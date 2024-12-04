@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Lotus.API;
 using Lotus.API.Odyssey;
-using Lotus.API.Vanilla;
 using Lotus.API.Vanilla.Meetings;
 using Lotus.API.Vanilla.Sabotages;
 using Lotus.Chat;
@@ -26,23 +25,14 @@ using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-//using VentLib.Options.Game;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using VentLib.Options.UI;
-using VentLib.Localization;
 using Lotus.Managers.History.Events;
 using VentLib.Utilities.Collections;
 using Lotus.API.Player;
-using Lotus.API.Reactive.HookEvents;
-using MS.Internal.Xml.XPath;
-using System.Diagnostics.Tracing;
-using Lotus.Options.General;
 using Lotus.Roles.Interfaces;
-using Lotus.GameModes.Standard;
-using System.ComponentModel;
-using Lotus.Victory.Conditions;
 //using static Lotus.Roles.RoleGroups.Impostors.Mafioso.MafiaTranslations;
 //using static Lotus.Roles.RoleGroups.Impostors.Mafioso.MafiaTranslations.MafiaOptionTranslations;
 
@@ -99,6 +89,7 @@ public class Scrapper: Engineer, ISabotagerRole
 
     private Cooldown knifeCooldown = null!;
     private Cooldown radioCooldown = null!;
+    private bool sabotageOn = false;
     private ShopItem[] shopItems;
     private ShopItem[] currentShopItems;
 
@@ -117,8 +108,8 @@ public class Scrapper: Engineer, ISabotagerRole
     [UIComponent(UI.Text, gameStates: GameState.Roaming)]
     private string ScrapIndicator()
     {
-        //if (hasRadio) return RoleColor.Colorize("Radio Ready") + " " + _colorizedScrap.Formatted(scrapAmount);
-        return (radioCooldown.IsReady() ? "" : Color.yellow.Colorize(" (" + radioCooldown + "s)")) + _colorizedScrap.Formatted(scrapAmount) + (knifeCooldown.IsReady() ? "" : Color.red.Colorize(" (" + knifeCooldown + "s)"));
+        if (!hasRadio) return _colorizedScrap.Formatted(scrapAmount)+ (knifeCooldown.IsReady() ? "" : Color.red.Colorize(" (" + knifeCooldown + "s)"));
+        return (radioCooldown.IsReady()&&!sabotageOn ? Color.yellow.Colorize("◈") : Color.yellow.Colorize("◇")) + _colorizedScrap.Formatted(scrapAmount) + (knifeCooldown.IsReady() ? "" : Color.red.Colorize(" (" + knifeCooldown + "s)"));
     }
     
     [UIComponent(UI.Name, ViewMode.Absolute, GameState.InMeeting)]
@@ -132,6 +123,7 @@ public class Scrapper: Engineer, ISabotagerRole
     {
         VentCooldown = 0f;
         VentDuration = 120f;
+        radioCooldown.SetDuration(30);
         _colorizedScrap = TranslationUtil.Colorize("Scrap::0: {0}", ScrapColor);
         shopItems = new ShopItem[]
         {
@@ -260,47 +252,55 @@ public class Scrapper: Engineer, ISabotagerRole
     [RoleAction(LotusActionType.VentEntered)]
     private void UseRadio()
     {
-        if (!hasRadio||radioCooldown.NotReady()) return;
-        radioCooldown.Start();
-        List<ISabotage> randomSab = new List<ISabotage>();
+        if (!hasRadio) return;
+        List<byte> randomSab = new List<byte>();
         if (ShipStatus.Instance is AirshipStatus)
         {
-            randomSab.Add(new HelicopterSabotage(MyPlayer));
-            randomSab.Add(new ElectricSabotage(MyPlayer));
-            randomSab.Add(new CommsSabotage(MyPlayer));
+            randomSab.Add((byte)SystemTypes.HeliSabotage);
+            randomSab.Add((byte)SystemTypes.Electrical);
+            randomSab.Add((byte)SystemTypes.Comms);
         }
         else if (ShipStatus.Instance.Type is ShipStatus.MapType.Ship)
         {
-            randomSab.Add(new ElectricSabotage(MyPlayer));
-            randomSab.Add(new CommsSabotage(MyPlayer));
-            randomSab.Add(new ReactorSabotage(MyPlayer));
-            randomSab.Add(new OxygenSabotage(MyPlayer));
+            randomSab.Add((byte)SystemTypes.Electrical);
+            randomSab.Add((byte)SystemTypes.Comms);
+            randomSab.Add((byte)SystemTypes.Reactor);
+            randomSab.Add((byte)SystemTypes.LifeSupp);
         }
         else if (ShipStatus.Instance.Type is ShipStatus.MapType.Hq)
         {
-            randomSab.Add(new ElectricSabotage(MyPlayer));
-            randomSab.Add(new CommsSabotage(MyPlayer));
-            randomSab.Add(new ReactorSabotage(MyPlayer));
-            randomSab.Add(new OxygenSabotage(MyPlayer));
+            randomSab.Add((byte)SystemTypes.Electrical);
+            randomSab.Add((byte)SystemTypes.Comms);
+            randomSab.Add((byte)SystemTypes.Reactor);
+            randomSab.Add((byte)SystemTypes.LifeSupp);
         }
         else if (ShipStatus.Instance.Type is ShipStatus.MapType.Pb)
         {
-            randomSab.Add(new ElectricSabotage(MyPlayer));
-            randomSab.Add(new CommsSabotage(MyPlayer));
-            randomSab.Add(new ReactorSabotage(MyPlayer));
+            randomSab.Add((byte)SystemTypes.Electrical);
+            randomSab.Add((byte)SystemTypes.Comms);
+            randomSab.Add((byte)SystemTypes.Reactor);
         }
-        ISabotage sabotage = randomSab.GetRandom();
-        SystemTypes system = SystemTypes.Sabotage;
-        sabotage.CallSabotage(MyPlayer);
-        //ISabotage sabotage1 = 
-        //ShipStatus.UpdateSystem(SystemTypes.Electrical, MyPlayer, 1);
-        
+        ShipStatus.Instance.UpdateSystem(SystemTypes.Sabotage, MyPlayer, randomSab.GetRandom());
     }
 
     [RoleAction(LotusActionType.SabotageFixed)]
     private void GainScraponSab(ISabotage sabotage)
     {
         if (sabotage.SabotageType() is not SabotageType.Door) scrapAmount += scrapFromBodies;
+    }
+
+    [RoleAction(LotusActionType.SabotageStarted, ActionFlag.GlobalDetector)]
+    private void DisableRadio(ISabotage sabotage)
+    {
+        if (sabotage.SabotageType() is not SabotageType.Door) sabotageOn = true;
+    }
+
+    [RoleAction(LotusActionType.SabotageFixed, ActionFlag.GlobalDetector)]
+    private void StartRadioCooldown(ISabotage sabotage)
+    {
+        if (sabotage.SabotageType() is SabotageType.Door) return;
+        sabotageOn = false;
+        radioCooldown.Start();
     }
 
     [RoleAction(LotusActionType.Vote)]
@@ -407,7 +407,7 @@ public class Scrapper: Engineer, ISabotagerRole
                     .BindInt(i => spikedCost = i)
                     .Build())
                 .SubOption(sub2 => sub2.Name("Radio Cost")//, RoleRadioCost)
-                    .AddIntRange(0, 20, 1, 10)
+                    .AddIntRange(0, 20, 1, 5)
                     .BindInt(i => radioCost = i)
                     .Build())
                 .SubOption(sub2 => sub2.Name("Scrap Laser Cost")//, RoleRadioCost)
@@ -427,11 +427,6 @@ public class Scrapper: Engineer, ISabotagerRole
                 .Value(v =>  v.Text(GeneralOptionTranslations.GlobalText).Color(new Color(1f, 0.61f, 0.33f)).Value(-1f).Build())
                 .AddFloatRange(0, 120, 2.5f, 0, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(knifeCooldown.SetDuration)
-                .Build())
-            .SubOption(sub => sub.Name("Radio Cooldown")
-                //.Value(v =>  v.Text(GeneralOptionTranslations.GlobalText).Color(new Color(1f, 0.61f, 0.33f)).Value(-1f).Build())
-                .AddFloatRange(0, 120, 2.5f, 0, GeneralOptionTranslations.SecondsSuffix)
-                .BindFloat(radioCooldown.SetDuration)
                 .Build())
             .SubOption(sub => sub.Name("Scrap Laser")
                 .AddOnOffValues(false)
@@ -468,7 +463,7 @@ public class Scrapper: Engineer, ISabotagerRole
                 .AddOnOffValues()
                 .BindBool(b => refreshTasks = b)
                 .Build());
-//Radio, Ultimates (Landmine, Laser, Adrenaline)
+//Ultimates (Landmine, Laser, Adrenaline)
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(new Color(0.6f, 0.6f, 0.6f))

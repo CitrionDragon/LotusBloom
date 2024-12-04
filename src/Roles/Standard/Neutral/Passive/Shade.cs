@@ -34,22 +34,25 @@ using Lotus.Options;
 using System.Linq;
 using Lotus.Factions;
 using Il2CppSystem.Runtime.Remoting.Messaging;
+using Lotus.Roles.Subroles;
+using VentLib.Logging;
 
 namespace LotusBloom.Roles.Standard.Neutral.Passive;
 
 public class Shade: Impostor
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Shade));
     public bool ShouldSkip() => !ProjectLotus.AdvancedRoleAssignment; // skip assignment if we dont allow role changes mid game
     private Cooldown swapCooldown= null!;
     private bool cantCallMeetings;
     private bool cantreport;
     private IRemote? cooldownOverride;
-
+    
     protected override void PostSetup()
     {
+        Rogue.IncompatibleRoles.Add(typeof(Shade));
         swapCooldown.Start();
     }
-
 
     [UIComponent(UI.Text, gameStates: GameState.Roaming)]
     private string CooldownIndicator() => swapCooldown.IsReady() ? "" : Color.gray.Colorize(" (" + swapCooldown + "s)");

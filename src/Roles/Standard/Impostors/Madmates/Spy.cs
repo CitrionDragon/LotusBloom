@@ -2,7 +2,6 @@
 using System.Linq;
 using Hazel;
 using Lotus;
-using Lotus.API;
 using Lotus.API.Odyssey;
 using Lotus.API.Player;
 using Lotus.API.Stats;
@@ -16,21 +15,17 @@ using Lotus.Options;
 using Lotus.Roles;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Roles.RoleGroups.Madmates.Roles;
 using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Networking.RPC;
-//using VentLib.Options.Game;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Options.UI;
-using InnerNet;
 using Lotus.Factions.Impostors;
 using VentLib.Utilities.Optionals;
 using Lotus.Factions;
-using HarmonyLib;
 
 namespace LotusBloom.Roles.Standard.Impostors.Madmates;
 
@@ -45,7 +40,6 @@ public class Spy: MadCrewmate
 
     private float bloomTime;
     public int bloomsBeforeReveal=2;
-    private bool revealOnBloom=true;
     private int tasksForFaction;
     private bool rolerevealed;
     private bool factionrevealed;

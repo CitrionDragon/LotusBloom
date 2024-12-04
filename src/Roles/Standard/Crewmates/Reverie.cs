@@ -23,6 +23,7 @@ using VentLib.Options.UI;
 using VentLib.Options.IO;
 using VentLib.Utilities;
 using VentLib.Utilities.Optionals;
+using Lotus.Roles.Subroles;
 
 namespace LotusBloom.Roles.Standard.Crewmates;
 
@@ -35,6 +36,11 @@ public partial class Reverie : Crewmate
     private bool doneTask;
     private float protectionAmt;
     private bool isProtected;
+
+    protected override void PostSetup()
+    {
+        Rogue.IncompatibleRoles.Add(typeof(Reverie));
+    }
 
     [UIComponent(UI.Counter)]
     private string CustomCooldown() => (!MyPlayer.IsAlive() || DeathTimer.IsReady() || (HasAllTasksComplete && !refreshTasks)) ? "" : Color.white.Colorize(DeathTimer + "s");

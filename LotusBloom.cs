@@ -10,6 +10,7 @@ using LotusBloom.Roles.Standard.Cult.CultRoles;
 using LotusBloom.Roles.Standard.Impostors;
 using LotusBloom.Roles.Standard.Impostors.Madmates;
 using LotusBloom.Roles.Standard.Crewmates;
+using LotusBloom.Roles.Standard.Modifiers;
 using LotusBloom.Factions.Cult;
 using System;
 using Lotus.Factions.Interfaces;
@@ -30,7 +31,7 @@ public class LotusBloom: LotusAddon
     public override void Initialize()
     {
         // Create instances first
-        List<CustomRole> allRoles = new List<CustomRole>() {new Reverie(), new Hypnotist(), new Scrapper(), new Harbinger(), new Shade(), new Eraser(), new QuickShooter(), new Spy(), new Initiator()};
+        List<CustomRole> allRoles = new List<CustomRole>() {new Reverie(), new Hypnotist(), new Scrapper(), new Harbinger(), new Shade(), new Eraser(), new QuickShooter(), new Spy(), new Damocles(), new Radar(), new Socializer(), new Initiator()};
 
         // Add your role to the gamemmode of your choice (Standard in this case.)
         allRoles.ForEach(StandardRoles.AddRole);

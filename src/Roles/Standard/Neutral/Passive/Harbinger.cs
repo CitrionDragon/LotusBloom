@@ -27,6 +27,7 @@ using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using VentLib.Options.UI;
 using Lotus;
+using Lotus.Roles.Subroles;
 
 namespace LotusBloom.Roles.Standard.Neutral.Passive;
 
@@ -51,6 +52,11 @@ public class Harbinger : TaskRoleBase
     private bool hasArrowToTarget;
     private PlayerControl trackedPlayer;
     [NewOnSetup] private List<Remote<IndicatorComponent>> components;
+
+    protected override void PostSetup()
+    {
+        Rogue.IncompatibleRoles.Add(typeof(Harbinger));
+    }
 
     [UIComponent(UI.Counter)]
     private string TaskCheck() => RoleUtils.Counter(taskCount, tasksBeforeCircle, RoleColor);
