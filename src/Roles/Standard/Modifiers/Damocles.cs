@@ -45,16 +45,6 @@ public class Damocles : Subrole
     [UIComponent(UI.Counter)]
     private string CustomCooldown() => (!MyPlayer.IsAlive() || suicideTimer.IsReady()) ? "" : Color.red.Colorize(suicideTimer + "s");
 
-    /*
-    [RoleAction(LotusActionType.Attack)]
-    public void Attack(PlayerControl target)
-    {
-        InteractionResult result = MyPlayer.InteractWith(target, LotusInteraction.HostileInteraction.Create(this));
-        if (result is InteractionResult.Halt) return;
-        suicideTimer.SetDuration(suicideTimer.TimeRemaining()+AUSettings.KillCooldown()+extratimekill);
-        suicideTimer.Start();
-    }
-    */
     [RoleAction(LotusActionType.VentEntered)]
     private void EnterVent(Vent vent)
     {
@@ -80,26 +70,22 @@ public class Damocles : Subrole
     }
 
     [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
-    private void PlayerDeath(PlayerControl deadplayer)
+    public void CheckPlayerDeath(PlayerControl target, PlayerControl killer, IDeathEvent deathEvent)
     {
-        if (Relationship(deadplayer) is Relation.FullAllies)
+        if (Relationship(target) is Relation.FullAllies)
         {
             suicideTimer.SetDuration(suicideTimer.TimeRemaining()-20f);
             suicideTimer.Start();
         }
-
-        FrozenPlayer frozendead = Game.MatchData.FrozenPlayers[deadplayer.GetGameID()];
-        IDeathEvent? deathEvent = frozendead.CauseOfDeath;
-        if (deathEvent == null) return;
-        FrozenPlayer killer = deathEvent.Instigator().Get();
+        killer = deathEvent.Instigator().Map(p => p.MyPlayer).OrElse(killer);
         if (killer == null) return;
-        /*if (killer.PlayerId is MyPlayer.PlayerId)
+        if (killer.PlayerId == MyPlayer.PlayerId)
         {
             suicideTimer.SetDuration(suicideTimer.TimeRemaining()+AUSettings.KillCooldown()+extratimekill);
             suicideTimer.Start();
             return;
-        }*/
-        if (Relationship(Utils.GetPlayerById(killer.PlayerId)) is Relation.FullAllies)
+        }
+        if (Relationship(killer) is Relation.FullAllies)
         {
             suicideTimer.SetDuration(suicideTimer.TimeRemaining()+10f);
             suicideTimer.Start();
