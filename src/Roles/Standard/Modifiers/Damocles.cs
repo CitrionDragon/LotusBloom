@@ -72,7 +72,7 @@ public class Damocles : Subrole
     [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
     public void CheckPlayerDeath(PlayerControl target, PlayerControl killer, IDeathEvent deathEvent)
     {
-        if (Relationship(target) is Relation.FullAllies)
+        if (target.Relationship(MyPlayer) is Relation.FullAllies)
         {
             suicideTimer.SetDuration(suicideTimer.TimeRemaining()-20f);
             suicideTimer.Start();
@@ -85,9 +85,9 @@ public class Damocles : Subrole
             suicideTimer.Start();
             return;
         }
-        if (Relationship(killer) is Relation.FullAllies)
+        if (killer.Relationship(MyPlayer) is Relation.FullAllies)
         {
-            suicideTimer.SetDuration(suicideTimer.TimeRemaining()+10f);
+            suicideTimer.SetDuration(suicideTimer.TimeRemaining()+100f);
             suicideTimer.Start();
         }
     }
