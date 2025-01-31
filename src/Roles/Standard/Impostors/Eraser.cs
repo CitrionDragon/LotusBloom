@@ -116,12 +116,12 @@ public class Eraser: Impostor
         CustomRole newRole = StandardGameMode.Instance.RoleManager.GetCleanRole(targetRole);
         Game.AssignRole(target, newRole);
         CustomRole role = target.PrimaryRole();
-        if (ProjectLotus.AdvancedRoleAssignment) role.Assign();
+        role.Assign();
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Erase Cooldown")//, KnifeCooldown)
+            .SubOption(sub => sub.Name("Erase Cooldown")
                 .AddFloatRange(0, 120, 2.5f, 0, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(eraseCooldown.SetDuration)
                 .Build())

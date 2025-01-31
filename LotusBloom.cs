@@ -31,7 +31,7 @@ public class LotusBloom: LotusAddon
     public override void Initialize()
     {
         // Create instances first
-        List<CustomRole> allRoles = new List<CustomRole>() {new Reverie(), new Hypnotist(), new Scrapper(), new Harbinger(), new Shade(), new Eraser(), new QuickShooter(), new Spy(), new Damocles(), new Radar(), new Socializer(), new Initiator()};
+        List<CustomRole> allRoles = new List<CustomRole>() {new Policeman(), new Reverie(), new Hypnotist(), new Scrapper(), new Harbinger(), new Shade(), new Eraser(), new QuickShooter(), new Spy(), new Damocles(), new Radar(), new Socializer(), new Supporter(), new Initiator()};
 
         // Add your role to the gamemmode of your choice (Standard in this case.)
         allRoles.ForEach(StandardRoles.AddRole);

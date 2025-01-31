@@ -1,0 +1,22 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# Rider ignored files
+/contentModel.xml
+/.idea.LotusBloom.iml
+/projectSettingsUpdater.xml
+/modules.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+
+bin/
+obj/
+bin/
+/.vs/
+FodyWeavers.xml
+FodyWeavers.xsd
+.idea/
+SampleRoleAddon.sln.DotSettings.user

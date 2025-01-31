@@ -171,9 +171,6 @@ public class Spy: MadCrewmate
     private bool IsAllies(PlayerControl player)
     {
         if (Relationship(player) is Relation.FullAllies) return true;
-        //if (Relationship(player) is Relation.SharedWinners) return true;
-        //CustomRole role = player.PrimaryRole();
-        //if (role.Faction is ImpostorFaction) return true;
         return false;
     }
     private void FinishBloom(byte playerId)

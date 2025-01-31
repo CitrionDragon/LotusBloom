@@ -42,7 +42,6 @@ namespace LotusBloom.Roles.Standard.Neutral.Passive;
 public class Shade: Impostor
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Shade));
-    public bool ShouldSkip() => !ProjectLotus.AdvancedRoleAssignment; // skip assignment if we dont allow role changes mid game
     private Cooldown swapCooldown= null!;
     private bool cantCallMeetings;
     private bool cantreport;
@@ -70,7 +69,7 @@ public class Shade: Impostor
         CustomRole newRole = StandardGameMode.Instance.RoleManager.GetCleanRole(targetRole);
         Game.AssignRole(MyPlayer, newRole);
         CustomRole role = MyPlayer.PrimaryRole();
-        if (ProjectLotus.AdvancedRoleAssignment) role.Assign();
+        role.Assign();
         newRole = StandardGameMode.Instance.RoleManager.GetCleanRole(myRole);
         Game.AssignRole(target, newRole);
         role = target.PrimaryRole();

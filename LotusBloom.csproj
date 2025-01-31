@@ -3,10 +3,24 @@
     <PropertyGroup>
         <Version>1.2.5</Version>
         <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>17.0</LangVersion>
+        <langVersion>latest</langVersion>
         <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
         <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
         <RootNamespace>SampleRoleAddon</RootNamespace>
     </PropertyGroup>
+
+    
+    <ItemGroup>
+        <Reference Include="VentFrameworkContinued">
+            <HintPath>$(AmongUsDirectory)\BepInEx\plugins\VentFrameworkContinued.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="Lotus">
+            <HintPath>$(AmongUsDirectory)\BepInEx\plugins\Lotus.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+    </ItemGroup>
     
     <PropertyGroup>
         <!-- Replace this with your Among Us Directory \/\/\/ -->
@@ -14,15 +28,13 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <PackageReference Include="VentFrameworkContinued" Version="1.1.0" />
-        <Reference Include="$(AmongUsDirectory)\BepInEx\plugins\Lotus.dll" />
         
-        <PackageReference Include="AmongUs.GameLibs.Steam" Version="2024.6.18" PrivateAssets="all" />
+        <PackageReference Include="AmongUs.GameLibs.Steam" Version="2024.10.29" PrivateAssets="all" />
 		<PackageReference Include="BepInEx.IL2CPP.MSBuild" Version="2.1.0-rc.1">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.674" Private="false" ExcludeAssets="runtime;native" />
+		<PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.697" Private="false" ExcludeAssets="runtime;native" />
 
         <PackageReference Include="BepInEx.AutoPlugin" Version="1.1.0" PrivateAssets="all" />
 
