@@ -50,8 +50,8 @@ public class Traitor : Subrole
         return result is InteractionResult.Proceed;
     }
 
-    [RoleAction(LotusActionType.RoundStart)]
-    public void Reveal()
+    //[RoleAction(LotusActionType.RoundStart)]
+    protected override void PostSetup()
     {
         CustomRole role = MyPlayer.PrimaryRole();
         RoleHolder roleHolder = MyPlayer.NameModel().GetComponentHolder<RoleHolder>();
@@ -88,21 +88,6 @@ public class Traitor : Subrole
     }
 */
 
-    [HarmonyPatch(typeof(StandardGameMode), nameof(StandardGameMode.ShowInformationToGhost), typeof(PlayerDeathHookEvent))]
-    class Patch
-    {
-        public static void Postfix(PlayerDeathHookEvent hookEvent)
-        {
-            PlayerControl player = hookEvent.Player;
-            if (Game.CurrentGameMode is not StandardGameMode) return;
-            if (Game.MatchData.MeetingsCalled > 1) return;
-            List<PlayerControl> candidates = Players.GetPlayers().Where(p => !p.Data.IsDead && p.PrimaryRole().Faction is Crewmates).ToList();
-            if (candidates.Count == 0) return;
-            PlayerControl candidate = candidates.GetRandom();
-            if (player.PrimaryRole().Faction.GetType() == typeof(ImpostorFaction)) StandardGameMode.Instance.Assign(candidate, RoleInstances.Traitor, false);
-        }
-    }
-
     public override bool IsAssignableTo(PlayerControl player)
     {
         if (player.PrimaryRole().Faction is Crewmates) return base.IsAssignableTo(player);
@@ -133,4 +118,19 @@ public class Traitor : Subrole
         .RoleColor(Color.red)
         .RoleFlags(RoleFlag.Unassignable)
         .RoleAbilityFlags(RoleAbilityFlag.IsAbleToKill);
+}
+
+static class Patch
+{
+    [HarmonyPatch(typeof(StandardGameMode), nameof(StandardGameMode.ShowInformationToGhost), typeof(PlayerDeathHookEvent))]
+    public static void Postfix(PlayerDeathHookEvent hookEvent)
+    {
+        PlayerControl player = hookEvent.Player;
+        if (Game.CurrentGameMode is not StandardGameMode) return;
+        if (Game.MatchData.MeetingsCalled > 1) return;
+        List<PlayerControl> candidates = Players.GetPlayers().Where(p => !p.Data.IsDead && p.PrimaryRole().Faction is Crewmates).ToList();
+        if (candidates.Count == 0) return;
+        PlayerControl candidate = candidates.GetRandom();
+        if (player.PrimaryRole().Faction.GetType() == typeof(ImpostorFaction)) StandardGameMode.Instance.Assign(candidate, RoleInstances.Traitor, false);
+    }
 }
