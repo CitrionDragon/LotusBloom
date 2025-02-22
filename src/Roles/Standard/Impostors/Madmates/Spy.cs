@@ -214,6 +214,8 @@ public class Spy: MadCrewmate
         }
     }
 
+    protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Impostors.Madmates.Spy.yaml";
+
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub.Name("Time until Bug Complete")//, Translations.Options.TimeUntilBloom)

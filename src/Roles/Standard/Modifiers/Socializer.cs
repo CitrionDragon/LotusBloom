@@ -68,8 +68,10 @@ public class Socializer : Subrole
         }
         paused=false;
     }
-    public override string Identifier() => "❀";
 
+    protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Modifiers.Socializer.yaml";
+
+    public override string Identifier() => "❀";
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub.Name("Time Before Benefits are Gained")//, Translations.Options.SpeedGainPerKill)

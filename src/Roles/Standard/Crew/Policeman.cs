@@ -38,10 +38,11 @@ using VentLib.Options.UI.Options;
 using Lotus.Roles.RoleGroups.Crew;
 using Lotus.Roles.RoleGroups.Impostors;
 
-namespace LotusBloom.Roles.Standard.Crewmates;
+namespace LotusBloom.Roles.Standard.Crew;
 
 public class Policeman : Crewmate
 {
+    /*
     public static List<(Func<CustomRole, bool> predicate, GameOptionBuilder builder)> RoleTypeBuilders = new()
     {
         (r => r.SpecialType is SpecialType.NeutralKilling, new GameOptionBuilder()
@@ -62,14 +63,20 @@ public class Policeman : Crewmate
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
             .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(2).Color(new Color(0.73f, 0.58f, 1f)).Build())
             .ShowSubOptionPredicate(i => (int)i == 2))
-    };
-    public static List<int> RoleTypeSettings = new() { 0, 0, 0 };
+    };*/
+    //ublic static List<int> RoleTypeSettings = new() { 0, 0, 0 };
     // 2 = Color red, 1 = Color green
-    public static Dictionary<Type, int> RoleColoringDictionary = new();
-    public Policeman()
+    //public static Dictionary<Type, int> RoleKillerDictionary = new();
+    /*public Policeman()
     {
         StandardRoles.Callbacks.Add(PopulateInvestigatorOptions);
-    }
+    }*/
+    /*public override void Sheriff()
+    {
+        private static Policeman _policeman = new();
+        public CustomRole Variation() => _policeman;
+    }*/
+    
     private int totalhandcuffs;
     private int handcuffs;
     private float handcuffSpeed;
@@ -84,10 +91,19 @@ public class Policeman : Crewmate
     private int InterrogateChance;
     private int InterrogateHandcuffChance;
     private int BreakChance;
+    private int KbAction = 0; //0 = Interrogate, 1 = Kill, 2 = Free
     protected override void PostSetup() => handcuffs = totalhandcuffs;
 
     [UIComponent(UI.Cooldown)]
     private Cooldown handcuffCooldown;
+
+    [UIComponent(UI.Text)]
+    private string ModeDisplay() 
+    {
+        if (KbAction == 0) return Color.yellow.Colorize("Interrogate");
+        if (KbAction == 1) return Color.red.Colorize("Kill");
+        return Color.green.Colorize("Free");
+    }
 
     [UIComponent(UI.Counter, ViewMode.Additive, GameState.Roaming, GameState.InMeeting)]
     public string RemainingShotCounter() => RoleUtils.Counter(handcuffs, totalhandcuffs);
@@ -98,6 +114,33 @@ public class Policeman : Crewmate
         handle.Cancel();
         if (dragging) return false;
         bool KillPlayer() => MyPlayer.InteractWith(target, LotusInteraction.FatalInteraction.Create(this)) is InteractionResult.Proceed;
+        CustomRole role = target.PrimaryRole();
+        int setting = -1;
+        Color color = Color.gray;
+        Sheriff.RoleTypeBuilders.FirstOrOptional(b => b.predicate(role)).IfPresent(rtb => setting = Sheriff.RoleTypeSettings[Sheriff.RoleTypeBuilders.IndexOf(rtb)]);
+        if (setting == 0) color = Color.green;
+        else if (setting == 1) color = Color.red;
+        if (color == Color.gray)
+        {
+            setting = Sheriff.RoleKillerDictionary.GetValueOrDefault(role.GetType(), -1);
+            if (setting == -1) setting = role.Faction.GetType() == typeof(ImpostorFaction) ? 1 : 2;
+            color = setting == 1 ? Color.red : Color.green;
+        }
+        
+        if (KbAction == 1)
+        {
+            if (color== Color.red) return KillPlayer();
+            DeathEvent deathEvent = new MisfiredEvent(MyPlayer);
+            UnblockedInteraction lotusInteraction = new(new FatalIntent(false, () => deathEvent), this);
+            MyPlayer.InteractWith(MyPlayer, lotusInteraction);
+            return true;
+        }
+        if (KbAction == 2)
+        {
+            if (target==handcuffedplayer) RemoveHandcuff();
+            return false;
+        }
+        /*
         if (evilplayers.Contains(target.PlayerId))
         {
             return KillPlayer();
@@ -106,7 +149,7 @@ public class Policeman : Crewmate
         {
             if (target==handcuffedplayer) RemoveHandcuff();
             return false;
-        }
+        }*/
         System.Random random = new System.Random();
         int randomnumber = random.Next(0, 100);
         if (target == handcuffedplayer)
@@ -122,12 +165,6 @@ public class Policeman : Crewmate
             MyPlayer.RpcMark();
             return false;
         }
-        CustomRole role = target.PrimaryRole();
-        int setting = -1;
-        RoleTypeBuilders.FirstOrOptional(b => b.predicate(role)).IfPresent(rtb => setting = RoleTypeSettings[RoleTypeBuilders.IndexOf(rtb)]);
-        if (setting == -1 || setting == 2) setting = RoleColoringDictionary.GetValueOrDefault(role.GetType(), -1);
-        if (setting == -1) setting = role.Faction.GetType() == typeof(ImpostorFaction) ? 1 : 2;
-        Color color = setting == 2 ? Color.green : Color.red;
         if (color == Color.green) goodplayers.Add(target.PlayerId);
         if (color == Color.red) evilplayers.Add(target.PlayerId);
         NameComponent nameComponent = new(new LiveString(target.name, color), Game.InGameStates, ViewMode.Replace, MyPlayer);
@@ -140,10 +177,15 @@ public class Policeman : Crewmate
     public void OnPet()
     {
         PlayerControl? closestPlayer = MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault();
-        if (closestPlayer == null) return;
+        if (closestPlayer == null)
+        {
+            KbAction++;
+            if (KbAction >= 3) KbAction = 0;
+            return;
+        }
         if (closestPlayer == handcuffedplayer)
         {
-            dragging = !dragging;
+            //dragging = !dragging; Disable dragging for now; You can use the Pet button near the handcuffed player to drag them around.
             return;
         }
         if (handcuffs <= 0||handcuffCooldown.NotReady()) return;
@@ -219,6 +261,8 @@ public class Policeman : Crewmate
         blockDelegate.UpdateDelegate();
     }
 
+    protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Crew.Policeman.yaml";
+
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .Color(RoleColor)
@@ -256,37 +300,14 @@ public class Policeman : Crewmate
                 .BindInt(i => BreakChance = i)
                 .Build());
 
-    private void PopulateInvestigatorOptions()
-    {
-        StandardRoles.Instance.AllRoles.OrderBy(r => r.EnglishRoleName).ForEach(r =>
-        {
-            RoleTypeBuilders.FirstOrOptional(b => b.predicate(r)).Map(i => i.builder)
-                .IfPresent(builder =>
-                {
-                    builder.SubOption(sub => sub.KeyName(r.EnglishRoleName, r.RoleColor.Colorize(r.RoleName))
-                        .AddEnableDisabledValues()
-                        .BindBool(b =>
-                        {
-                            if (b) RoleColoringDictionary[r.GetType()] = 1;
-                            else RoleColoringDictionary[r.GetType()] = 2;
-                        })
-                        .Build());
-                });
-        });
-        RoleTypeBuilders.ForEach((rtb, index) =>
-        {
-            rtb.builder.BindInt(i => RoleTypeSettings[index] = i);
-            Option option = rtb.builder.Build();
-            //RoleOptions.AddChild(option);
-            GlobalRoleManager.RoleOptionManager.Register(option, OptionLoadMode.LoadOrCreate);
-        });
-    }
+    //protected override RoleType GetRoleType() => RoleType.Variation;
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .DesyncRole(RoleTypes.Impostor)
             .RoleColor(Color.blue)
             .RoleAbilityFlags(RoleAbilityFlag.CannotVent | RoleAbilityFlag.CannotSabotage | RoleAbilityFlag.IsAbleToKill)
+            //.RoleFlags(RoleFlag.VariationRole)
             .OptionOverride(Override.KillCooldown, () => InterrogateCooldown.Duration)
             .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod())
             .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod() / 5, () => SabotagePatch.CurrentSabotage != null && SabotagePatch.CurrentSabotage.SabotageType() is SabotageType.Lights);

@@ -7,7 +7,7 @@
         <langVersion>latest</langVersion>
         <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
         <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
-        <RootNamespace>SampleRoleAddon</RootNamespace>
+        <RootNamespace>LotusBloom</RootNamespace>
     </PropertyGroup>
 
     

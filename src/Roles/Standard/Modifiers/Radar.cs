@@ -42,6 +42,8 @@ public class Radar : Subrole
         Lastplayer = closestPlayer;
     }
 
+    protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Modifiers.Radar.yaml";
+
     public override string Identifier() => "◉";
 
     protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier)

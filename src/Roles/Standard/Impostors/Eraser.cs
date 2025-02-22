@@ -119,6 +119,8 @@ public class Eraser: Impostor
         role.Assign();
     }
 
+    protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Impostors.Eraser.yaml";
+
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub.Name("Erase Cooldown")

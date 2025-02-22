@@ -166,6 +166,8 @@ public class Harbinger : TaskRoleBase
         return () => AssetLoader.LoadSprite("SampleRoleAddon.assets.crewcrew.png", 500, true);
     }*/
 
+    protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Neutrals.Passive.Harbinger";
+
     protected override RoleModifier Modify(RoleModifier roleModifier) => roleModifier
         .RoleFlags(RoleFlag.CannotWinAlone)
         .RoleColor(new Color(0.57f, 0.36f, 0.57f))

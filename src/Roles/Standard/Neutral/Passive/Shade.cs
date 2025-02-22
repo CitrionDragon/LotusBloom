@@ -110,6 +110,8 @@ public class Shade: Impostor
         if (!deadBody.Exists() && cantCallMeetings) handle.Cancel();
     }
 
+    protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Neutrals.Passive.Shade.yaml";
+
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub.Name("Swap Cooldown")//, KnifeCooldown)

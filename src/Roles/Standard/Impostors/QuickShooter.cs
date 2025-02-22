@@ -50,6 +50,9 @@ public class QuickShooter: Impostor
         reloadCooldown.Start(AUSettings.KillCooldown());
         if (bulletCount >= keptBullets) bulletCount = keptBullets;
     }
+
+    protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Impostors.QuickShooter.yaml";
+
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub.Name("Reload Cooldown")

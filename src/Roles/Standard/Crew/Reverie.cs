@@ -25,7 +25,7 @@ using VentLib.Utilities;
 using VentLib.Utilities.Optionals;
 using Lotus.Roles.Subroles;
 
-namespace LotusBloom.Roles.Standard.Crewmates;
+namespace LotusBloom.Roles.Standard.Crew;
 
 public partial class Reverie : Crewmate
 {

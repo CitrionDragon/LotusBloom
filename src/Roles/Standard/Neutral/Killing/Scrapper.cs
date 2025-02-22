@@ -388,6 +388,8 @@ public class Scrapper: Engineer, ISabotagerRole
 
     public bool CanSabotage() => true;
 
+    protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Neutrals.Killing.Scrapper";
+
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub.Name("Modify Shop Costs")//, ModifyShopCosts)

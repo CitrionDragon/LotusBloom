@@ -63,6 +63,9 @@ public class Supporter : Subrole
         if (player.PrimaryRole().Faction.GetType()==typeof(ImpostorFaction)||(MadmateAddon&player.PrimaryRole().Faction.GetType()==typeof(Madmates))) base.IsAssignableTo(player);
         return false;
     }
+
+    protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Modifiers.Supporter.yaml";
+
     public override string Identifier() => "⁑";
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)

@@ -136,6 +136,8 @@ public class Damocles : Subrole
         return base.IsAssignableTo(player);
     }
 
+    protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Modifiers.Damocles.yaml";
+
     public override string Identifier() => "ψ";
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)

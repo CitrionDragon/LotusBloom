@@ -95,13 +95,16 @@ public class CultLeader : CultRole
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddKillCooldownOptions(base.RegisterOptions(optionStream)
             .SubOption(sub2 => sub2.Name("Limited Cultist Kill Range")
-                    .BindBool(b => limitedKillRange = b)
-                    .AddOnOffValues(false)
-                    .Build()));
+                .BindBool(b => limitedKillRange = b)
+                .AddOnOffValues(false)
+                .Build()));
+
+    protected override RoleType GetRoleType() => RoleType.Transformation;
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(new Color(0.8f, 0.36f, 0.8f))
+            .RoleFlags(RoleFlag.VariationRole)
             .CanVent(false)
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 }

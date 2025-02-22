@@ -107,4 +107,6 @@ public class Hypnotist: NeutralKillingBase
         base.Modify(roleModifier)
             .RoleColor(new Color(1f, 0.75f, 0.8f))
             .OptionOverride(new IndirectKillCooldown(KillCooldown));
+
+    protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Neutrals.Killing.Hypnotist";
 }
