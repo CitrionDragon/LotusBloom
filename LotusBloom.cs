@@ -16,6 +16,9 @@ using System;
 using Lotus.Factions.Interfaces;
 using VentLib.Utilities.Extensions;
 using Lotus.Roles.RoleGroups.Crew;
+using HarmonyLib;
+using System.Reflection;
+using Il2CppMono.Security.Authenticode;
 
 namespace LotusBloom;
 
@@ -23,6 +26,8 @@ namespace LotusBloom;
 public class LotusBloom: LotusAddon
 {
     public static LotusBloom Instance = null!;
+
+    private Harmony harmony;
 
     public static Dictionary<string, Type?> FactionTypes = new()
     {
@@ -48,9 +53,13 @@ public class LotusBloom: LotusAddon
         }] = f.GetType());
         ExportFactions(allFactions);
         Instance = this;
+
+        //Harmony
+        harmony = new Harmony("com.citriondragon.lotusbloom");
+        harmony.PatchAll();
     }
 
-    public override string Name { get; } = "Lotus Bloom Addon Addon";
+    public override string Name { get; } = "Lotus Bloom Addon";
 
     public override VentLib.Version.Version Version { get; } = new LotusBloomVersion();
 }

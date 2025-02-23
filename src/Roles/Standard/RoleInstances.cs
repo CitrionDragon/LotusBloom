@@ -16,6 +16,8 @@ using System;
 using Lotus.Factions.Interfaces;
 using VentLib.Utilities.Extensions;
 using Lotus.Roles.RoleGroups.Crew;
+using HarmonyLib;
+using System.Reflection;
 
 public class RoleInstances
 {

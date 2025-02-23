@@ -32,6 +32,7 @@ using Lotus.GameModes.Standard;
 using Lotus.API.Reactive.HookEvents;
 using HarmonyLib;
 using Lotus.API.Player;
+using System.Reflection;
 
 namespace LotusBloom.Roles.Standard.Modifiers;
 
@@ -118,6 +119,7 @@ public class Traitor : Subrole
         .RoleColor(Color.red)
         .RoleFlags(RoleFlag.Unassignable)
         .RoleAbilityFlags(RoleAbilityFlag.IsAbleToKill);
+
 }
 
 static class Patch
