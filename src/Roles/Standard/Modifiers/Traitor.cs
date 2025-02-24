@@ -125,6 +125,7 @@ public class Traitor : Subrole
 static class Patch
 {
     [HarmonyPatch(typeof(StandardGameMode), nameof(StandardGameMode.ShowInformationToGhost), typeof(PlayerDeathHookEvent))]
+    [HarmonyPostfix]
     public static void Postfix(PlayerDeathHookEvent hookEvent)
     {
         PlayerControl player = hookEvent.Player;
