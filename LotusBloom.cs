@@ -36,6 +36,14 @@ public class LotusBloom: LotusAddon
     
     public override void Initialize()
     {
+        List<IFaction> allFactions = new() {new Cultist.Origin()};
+        allFactions.ForEach((f, i) => FactionTypes[i switch {
+            0 => "Cultist.Origin",
+            _ => throw new ArgumentOutOfRangeException($"{i} is not in our list of valid indexes. Did you forgot to add a number?")
+        }] = f.GetType());
+        ExportFactions(allFactions);
+        Instance = this;
+        
         // Create instances first
         List<CustomRole> allRoles = new List<CustomRole>() {new Policeman(), new Reverie(), new Hypnotist(), new Scrapper(), new Harbinger(), new Shade(), new Eraser(), new QuickShooter(), new Spy(), new Damocles(), new Radar(), new Socializer(), new Supporter(), RoleInstances.Traitor, new Initiator()};
 
@@ -46,13 +54,7 @@ public class LotusBloom: LotusAddon
         // Register roles
         ExportCustomRoles(allRoles, typeof(StandardGameMode));
 
-        List<IFaction> allFactions = new() {new Cultist.Origin()};
-        allFactions.ForEach((f, i) => FactionTypes[i switch {
-            0 => "Cultist.Origin",
-            _ => throw new ArgumentOutOfRangeException($"{i} is not in our list of valid indexes. Did you forgot to add a number?")
-        }] = f.GetType());
-        ExportFactions(allFactions);
-        Instance = this;
+        
 
         //Harmony
         harmony = new Harmony("com.citriondragon.lotusbloom");

@@ -8,15 +8,13 @@ public partial class Cultist
 {
     public class Betrayed : Cultist, ISubFaction<Cultist>
     {
-        public IFaction PreviousFaction { get; }
-        public IndicatorComponent UnconvertedName { get; }
+        public NameComponent NameComponent { get; }
 
-        public Betrayed(IFaction previousFaction, IndicatorComponent unconvertedName)
+        public Betrayed(NameComponent component)
         {
-            this.PreviousFaction = previousFaction;
-            this.UnconvertedName = unconvertedName;
+            NameComponent = component;
         }
-
+        
         public Relation MainFactionRelationship() => Relation.None;
 
         public Relation Relationship(ISubFaction<Cultist> subFaction)

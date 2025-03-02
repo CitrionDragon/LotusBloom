@@ -38,10 +38,22 @@ namespace LotusBloom.Roles.Standard.Cult.CultRoles;
 public class CultLeader : CultRole
 {
     private bool limitedKillRange;
+    private int alivePlayers;
+    private bool disableWinCheck;
 
     public CultLeader()
     {
         RelatedRoles.Add(typeof(Initiator));
+    }
+
+    protected override void PostSetup()
+    {
+        Game.GetWinDelegate().AddSubscriber(DenyWinConditions);
+        List<PlayerControl> initiated = Players.GetPlayers().Where(p => p.PlayerId != MyPlayer.PlayerId && Relationship(p) is Relation.SharedWinners).ToList();
+        initiated.ForEach(p=>
+        {
+            ConvertToCult(p);
+        });
     }
 
     [UIComponent(UI.Cooldown)]
@@ -67,7 +79,7 @@ public class CultLeader : CultRole
         if (killCooldown.NotReady()) return;
         killCooldown.Start(AUSettings.KillCooldown());
         List<PlayerControl> eligiblePlayers = Players.GetAlivePlayers()
-            .Where(p => p.Relationship(MyPlayer) is Relation.FullAllies)
+            .Where(p => p.Relationship(MyPlayer) is Relation.FullAllies & p.PlayerId != MyPlayer.PlayerId)
             .ToList();
         PlayerControl selected = eligiblePlayers.PopRandom();
         KillNearestPlayer(selected, limitedKillRange);
@@ -90,6 +102,18 @@ public class CultLeader : CultRole
         Game.MatchData.GameHistory.AddEvent(new ManipulatedPlayerKillEvent(player, target, MyPlayer, isDead));
 
         return isDead;
+    }
+
+    private void DenyWinConditions(WinDelegate winDelegate)
+    {
+        if (disableWinCheck) return;
+        List<PlayerControl> winners = winDelegate.GetWinners();
+        if (winners.Any(p => p.PlayerId == MyPlayer.PlayerId)) return;
+        List<PlayerControl> undeadWinners = winners.Where(p => p.PrimaryRole().Faction == FactionInstances.GetExternalFaction(LotusBloom.FactionTypes["Cultist.Origin"])).ToList();
+
+        if (undeadWinners.Count(IsConvertedCult) == winners.Count) winDelegate.CancelGameWin();
+        else if (undeadWinners.Count == winners.Count && MyPlayer.IsAlive()) winDelegate.CancelGameWin();
+        else undeadWinners.Where(tc => IsConvertedCult(tc) || MyPlayer.IsAlive() && IsUnconvertedCult(tc)).ForEach(uw => winners.Remove(uw));
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>

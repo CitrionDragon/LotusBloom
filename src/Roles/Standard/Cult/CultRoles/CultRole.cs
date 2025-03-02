@@ -16,74 +16,52 @@ using Lotus.Extensions;
 using Lotus.Roles.Internals;
 using UnityEngine;
 using Lotus.API.Player;
+using VentLib.Utilities;
 
 namespace LotusBloom.Roles.Standard.Cult.CultRoles;
 
 public class CultRole : Impostor
 {
     //private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(CultRole));
-    public static Color CultColor = new(0.33f, 0.46f, 0.76f);
+    public static Color CultColor = new(0.8f, 0.36f, 0.8f);
 
     public override bool CanSabotage() => false;
 
-    public void ConvertToCult(PlayerControl target)
+    public void InitiateToCult(PlayerControl target)
     {
+        CustomRole role = target.PrimaryRole();
+        if (IsUnconvertedCult(target)) return; //already converted
         List<PlayerControl> viewers = Players.GetAlivePlayers().Where(IsConvertedCult).ToList();
 
         INameModel nameModel = target.NameModel();
+        IndicatorComponent indicatorComponent = new(new LiveString("☆", CultColor), Game.InGameStates, ViewMode.Additive, () => viewers);
 
-        IndicatorComponent indicatorComponent = new(new LiveString("◎", new Color(0.46f, 0.58f, 0.6f)), new[] { GameState.Roaming, GameState.InMeeting }, ViewMode.Additive, () => viewers);
-
-        nameModel.GetComponentHolder<IndicatorHolder>().Add(indicatorComponent);
-        viewers.ForEach(v => nameModel.GetComponentHolder<RoleHolder>()[0].AddViewer(v));
-
-        CustomRole role = target.PrimaryRole();
-        role.Faction = new Cultist.Initiated(role.Faction, indicatorComponent);
-        role.SpecialType = SpecialType.Undead;
-        Game.MatchData.GameHistory.AddEvent(new ConvertEvent(MyPlayer, target));
+        role.Faction = new Cultist.Initiated(role.Faction, nameModel.GetComponentHolder<IndicatorHolder>().Add(indicatorComponent));
+        role.SpecialType = SpecialType.Coven;
+        Game.MatchData.GameHistory.AddEvent(new InitiateEvent(MyPlayer, target));
     }
 
-    public void InitiateCult(PlayerControl target)
+    public void ConvertToCult(PlayerControl target)
     {
-        List<PlayerControl> undead = Players.GetAlivePlayers().Where(IsConvertedCult).ToList();
-        List<PlayerControl> viewers = new() { target };
+        CustomRole role = target.PrimaryRole();
+        if (role.SpecialType != SpecialType.Coven) return;
+        if (role.Faction is not Cultist.Initiated initiated) return;
+        List<PlayerControl> cult = Players.GetAlivePlayers().Where(IsConvertedCult).ToList();
 
-        LiveString undeadPlayerName = new(target.name, CultColor);
+        initiated.Indicator.Delete();
+        
+        RoleHolder roleHolder = target.NameModel().GetComponentHolder<RoleHolder>();
+        string newRoleName = CultColor.Colorize(role.RoleName);
+        roleHolder.Add(new RoleComponent(new LiveString(newRoleName), Game.InGameStates, ViewMode.Replace, target));
+        role.Faction = FactionInstances.GetExternalFaction(LotusBloom.FactionTypes["Cultist.Origin"]);
 
-        if (target.PrimaryRole().Faction is Cultist.Initiated unconverted)
+        cult.ForEach(p =>
         {
-            IndicatorComponent oldComponent = unconverted.UnconvertedName;
-            // oldComponent.SetMainText(undeadPlayerName);
-            oldComponent.AddViewer(target);
-        }
-        else
-        {
-            IndicatorComponent newComponent = new(new LiveString("●", CultColor), new[] { GameState.Roaming, GameState.InMeeting }, ViewMode.Replace, () => viewers);
-            target.NameModel().GetComponentHolder<IndicatorHolder>().Add(newComponent);
-        }
-
-        target.PrimaryRole().Faction = FactionInstances.GetExternalFaction(LotusBloom.FactionTypes["Cultist.Origin"]);
-        undead.ForEach(p =>
-        {
-            //log.Debug($"Cult namemodel update - {p.GetNameWithRole()}");
-            INameModel nameModel = p.NameModel();
-            nameModel.GetComponentHolder<RoleHolder>()[0].AddViewer(target);
-
-            switch (p.PrimaryRole().Faction)
-            {
-                case Cultist.Converted converted:
-                    converted.NameComponent.AddViewer(target);
-                    break;
-                case Cultist.Initiated:
-                    //log.Debug($"initiated {nameModel.GetComponentHolder<IndicatorHolder>().Count}");
-                    nameModel.GetComponentHolder<IndicatorHolder>()[0].AddViewer(target);
-                    break;
-                default: // origin
-                    //nameModel.GetComponentHolder<IndicatorHolder>().Add(new IndicatorComponent(new LiveString("●", CultColor), [GameState.Roaming, GameState.InMeeting], ViewMode.Replace, viewers: () => viewers));
-                    break;
-            }
+            roleHolder[0].AddViewer(p);
+            roleHolder.Add(new RoleComponent(new LiveString(newRoleName), Game.InGameStates, ViewMode.Replace, p));
+            p.NameModel().GetComponentHolder<RoleHolder>().Last().AddViewer(target);
         });
-        Game.MatchData.GameHistory.AddEvent(new InitiateEvent(MyPlayer, target));
+        Game.MatchData.GameHistory.AddEvent(new ConvertEvent(MyPlayer, target));
     }
 
     protected static bool IsUnconvertedCult(PlayerControl player) => player.PrimaryRole().Faction is Cultist.Initiated;

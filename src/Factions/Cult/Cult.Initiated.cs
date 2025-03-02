@@ -1,6 +1,7 @@
 using Lotus.Factions;
 using Lotus.Factions.Interfaces;
 using Lotus.GUI.Name.Components;
+using VentLib.Utilities.Collections;
 
 namespace LotusBloom.Factions.Cult;
 
@@ -9,12 +10,12 @@ public partial class Cultist
     public class Initiated : Cultist, ISubFaction<Cultist>
     {
         public IFaction PreviousFaction { get; }
-        public IndicatorComponent UnconvertedName { get; }
+        public Remote<IndicatorComponent> Indicator { get; }
 
-        public Initiated(IFaction previousFaction, IndicatorComponent unconvertedName)
+        public Initiated(IFaction previousFaction, Remote<IndicatorComponent> indicator)
         {
             this.PreviousFaction = previousFaction;
-            this.UnconvertedName = unconvertedName;
+            this.Indicator = indicator;
         }
 
         public Relation MainFactionRelationship() => Relation.SharedWinners;
