@@ -1,4 +1,5 @@
 using Lotus.Addons;
+using Lotus.GameModes;
 using Lotus.GameModes.Standard;
 using LotusBloom.Version;
 using Lotus.Roles;
@@ -19,6 +20,10 @@ using Lotus.Roles.RoleGroups.Crew;
 using HarmonyLib;
 using System.Reflection;
 using Il2CppMono.Security.Authenticode;
+using Lotus.Victory.Conditions;
+using Lotus.Roles.RoleGroups.Undead;
+using LotusBloom.Roles.Standard.Cult;
+using Lotus.Victory;
 
 namespace LotusBloom;
 
@@ -28,14 +33,19 @@ public class LotusBloom: LotusAddon
     public static LotusBloom Instance = null!;
 
     private Harmony harmony;
+    private static WinDelegate _winDelegate = new();
 
     public static Dictionary<string, Type?> FactionTypes = new()
     {
         {"Cultist.Origin", null}
     };
+
+    public static WinDelegate GetWinDelegate() => _winDelegate;
+
     
     public override void Initialize()
     {
+        // Create Factions
         List<IFaction> allFactions = new() {new Cultist.Origin()};
         allFactions.ForEach((f, i) => FactionTypes[i switch {
             0 => "Cultist.Origin",
@@ -44,6 +54,11 @@ public class LotusBloom: LotusAddon
         ExportFactions(allFactions);
         Instance = this;
         
+        List<IWinCondition> winConditions = new List<IWinCondition>() {new CultWinCondition()};
+        winConditions.ForEach(w =>{
+            _winDelegate.AddWinCondition(w);
+        });
+
         // Create instances first
         List<CustomRole> allRoles = new List<CustomRole>() {new Policeman(), new Reverie(), new Hypnotist(), new Scrapper(), new Harbinger(), new Shade(), new Eraser(), new QuickShooter(), new Spy(), new Damocles(), new Radar(), new Socializer(), new Supporter(), RoleInstances.Traitor, new Initiator()};
 
@@ -60,7 +75,7 @@ public class LotusBloom: LotusAddon
         harmony = new Harmony("com.citriondragon.lotusbloom");
         harmony.PatchAll();
     }
-
+    
     public override string Name { get; } = "Lotus Bloom Addon";
 
     public override VentLib.Version.Version Version { get; } = new LotusBloomVersion();

@@ -23,19 +23,19 @@ public class CultWinCondition : IFactionWinCondition
     {
         factions = CultFactions;
 
-        int aliveUndead = 0;
+        int aliveCult = 0;
         int aliveOther = 0;
 
-        bool necromancerAlive = false;
+        bool cultLeaderAlive = false;
         foreach (CustomRole role in Players.GetAlivePlayers().Select(p => p.PrimaryRole()))
         {
-            if (role is CultLeader) necromancerAlive = true;
-            if (role.Faction == FactionInstances.GetExternalFaction(LotusBloom.FactionTypes["Cultist.Origin"])) aliveUndead++;
+            if (role is CultLeader) cultLeaderAlive = true;
+            if (role.Faction == FactionInstances.GetExternalFaction(LotusBloom.FactionTypes["Cultist.Origin"])) aliveCult++;
             else aliveOther++;
         }
 
         //if (necromancerAlive && aliveUndead >= aliveOther) VentLogger.Info("Undead Win");
-        return necromancerAlive && aliveOther <= 0;
+        return cultLeaderAlive && aliveCult >= aliveOther;
     }
 
     public WinReason GetWinReason() => new(ReasonType.FactionLastStanding);
