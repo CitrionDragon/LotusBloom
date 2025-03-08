@@ -124,6 +124,9 @@ public class Initiator : CultRole
         else if (undeadWinners.Count == winners.Count && MyPlayer.IsAlive()) winDelegate.CancelGameWin();
         else undeadWinners.Where(tc => IsConvertedCult(tc) || MyPlayer.IsAlive() && IsUnconvertedCult(tc)).ForEach(uw => winners.Remove(uw));
     }
+
+    protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Cult.Initiator.yaml";
+
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub.Name("Convert Cooldown")

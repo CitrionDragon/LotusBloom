@@ -101,6 +101,8 @@ public partial class Reverie : Crewmate
     [RoleAction(LotusActionType.RoundEnd)]
     private void StopDeathTimer() => paused = true;
 
+    protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Crew.Reverie.yaml";
+
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub.Name("Time Until Suicide")//, SerialKillerTranslations.SerialKillerOptionTranslations.TimeUntilSuicide)
