@@ -16,7 +16,7 @@ namespace LotusBloom.Roles.Standard.Cult;
 
 public class CultWinCondition : IFactionWinCondition
 {
-    private static readonly List<IFaction> CultFactions = [ FactionInstances.GetExternalFaction(typeof(Cultist.Origin)), new Cultist.Initiated(null!, null!) ];
+    private static readonly List<IFaction> CultFactions = new() {FactionInstances.GetExternalFaction(typeof(Cultist.Origin)), new Cultist.Initiated(null!, null!)};
     public List<IFaction> Factions() => CultFactions;
 
     public bool IsConditionMet(out List<IFaction> factions)
@@ -35,7 +35,7 @@ public class CultWinCondition : IFactionWinCondition
         }
 
         //if (necromancerAlive && aliveUndead >= aliveOther) VentLogger.Info("Undead Win");
-        return cultLeaderAlive && aliveCult >= aliveOther;
+        return cultLeaderAlive && aliveOther <= 0;
     }
 
     public WinReason GetWinReason() => new(ReasonType.FactionLastStanding);

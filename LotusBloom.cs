@@ -41,17 +41,17 @@ public class LotusBloom: LotusAddon
     public override void Initialize()
     {
         // Create Factions
-        List<IFaction> allFactions = [new Cultist.Origin()];
+        List<IFaction> allFactions = new() {new Cultist.Origin()};
         ExportFactions(allFactions);
         Instance = this;
 
         // Create instances first
-        List<CustomRole> allRoles = [
+        List<CustomRole> allRoles = new() {
             new Policeman(), new Reverie(), new Hypnotist(), new Scrapper(), 
             new Harbinger(), new Shade(), new Eraser(), new QuickShooter(), 
             new Spy(), new Damocles(), new Radar(), new Socializer(), 
             new Supporter(), RoleInstances.Traitor, new Initiator()
-        ];
+        };
 
         // Add your role to the gamemmode of your choice (Standard in this case.)
         allRoles.ForEach(StandardRoles.AddRole);

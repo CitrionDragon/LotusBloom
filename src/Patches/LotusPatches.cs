@@ -14,6 +14,7 @@ using Lotus.Factions.Crew;
 using Lotus.Factions.Impostors;
 using VentLib.Logging;
 using VentLib.Utilities.Extensions;
+using LotusBloom.Roles.Standard.Modifiers;
 
 namespace LotusBloom.Patches;
 
@@ -48,7 +49,7 @@ public static class LotusPatches
             if (player.PrimaryRole().Faction.GetType() != typeof(ImpostorFaction)) return;
         
             _log.Debug($"Meetings Called? {Game.MatchData.MeetingsCalled}");
-            if (Game.MatchData.MeetingsCalled > 1) return; // Not sure if you mean "< 1". Because this means traitor can only spawn round 1
+            if (Game.MatchData.MeetingsCalled < RoleInstances.Traitor.roundUntilSpawn) return; // Not sure if you mean "< 1". Because this means traitor can only spawn round 1
         
             List<PlayerControl> candidates = Players.GetPlayers().Where(p => p.IsAlive() && p.PrimaryRole().Faction is Crewmates).ToList();
             _log.Debug($"Possible Crew {candidates.Count}");

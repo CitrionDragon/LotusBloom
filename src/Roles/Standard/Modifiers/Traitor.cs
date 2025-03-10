@@ -40,7 +40,9 @@ public class Traitor : Subrole
 {
     private bool restrictedToCompatibleRoles;
     public bool requiresBaseKillMethod;
-    private bool revealed = false;
+    private List<Color> colorGradient;
+
+    public int roundUntilSpawn;
 
     [RoleAction(LotusActionType.Attack)]
     private bool TryKill(PlayerControl target)
@@ -56,16 +58,21 @@ public class Traitor : Subrole
     {
         CustomRole role = MyPlayer.PrimaryRole();
         RoleHolder roleHolder = MyPlayer.NameModel().GetComponentHolder<RoleHolder>();
-        string newRoleName = Color.red.Colorize(role.RoleName);
-        roleHolder.Add(new RoleComponent(new LiveString(newRoleName), Game.InGameStates, ViewMode.Replace, MyPlayer));
+        colorGradient = new List<Color> { role.RoleColor, Color.red };
+        RoleColorGradient = new ColorGradient(colorGradient.ToArray());
+        string newRoleName = RoleColorGradient.Apply(role.RoleName);
         role.Faction = FactionInstances.Impostors;
-        CustomRole myPlayerRole = MyPlayer.PrimaryRole();
         StandardRoles roleHolder2 = StandardGameMode.Instance.RoleManager.RoleHolder;
         Game.AssignRole(MyPlayer, roleHolder2.Static.Impostor);
         CustomRole role2 = MyPlayer.PrimaryRole();
         role2.Assign();
-        MyPlayer.GetSubroles().Add(myPlayerRole);
-        role.DesyncRole = RoleTypes.Impostor;
+        MyPlayer.GetSubroles().Add(role);
+        if (role.RealRole.IsCrewmate())
+        {
+            role.DesyncRole = RoleTypes.Impostor;
+            MyPlayer.GetTeamInfo().MyRole = RoleTypes.Impostor;
+        }
+        roleHolder.Add(new RoleComponent(new LiveString(newRoleName), Game.InGameStates, ViewMode.Replace, MyPlayer));
         requiresBaseKillMethod = !role.GetActions(LotusActionType.Attack).Any();
     }
 /*
@@ -113,6 +120,10 @@ public class Traitor : Subrole
             .SubOption(sub => sub.Name("Restrict to Compatible Roles")//, Translations.Options.RestrictToCompatbileRoles)
                 .BindBool(b => restrictedToCompatibleRoles = b)
                 .AddOnOffValues()
+                .Build())
+            .SubOption(sub => sub.Name("Rounds until Traitor can Spawn")//, Translations.Options.BloomsUntilRoleReveal)
+                .AddIntRange(0, 10, 1, 3)
+                .BindInt(i => roundUntilSpawn = i)
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier)
