@@ -32,6 +32,7 @@ using Lotus.Factions.Neutrals;
 using Lotus.Factions.Impostors;
 using Lotus.Factions.Crew;
 using System.Xml.Serialization;
+using LotusBloom.Factions.Cult;
 using Rewired;
 
 namespace LotusBloom.Roles.Standard.Cult.CultRoles;
@@ -118,7 +119,7 @@ public class Initiator : CultRole
         if (disableWinCheck) return;
         List<PlayerControl> winners = winDelegate.GetWinners();
         if (winners.Any(p => p.PlayerId == MyPlayer.PlayerId)) return;
-        List<PlayerControl> undeadWinners = winners.Where(p => p.PrimaryRole().Faction == FactionInstances.GetExternalFaction(LotusBloom.FactionTypes["Cultist.Origin"])).ToList();
+        List<PlayerControl> undeadWinners = winners.Where(p => p.PrimaryRole().Faction == FactionInstances.GetExternalFaction(typeof(Cultist.Origin))).ToList();
 
         if (undeadWinners.Count(IsConvertedCult) == winners.Count) winDelegate.CancelGameWin();
         else if (undeadWinners.Count == winners.Count && MyPlayer.IsAlive()) winDelegate.CancelGameWin();

@@ -53,7 +53,7 @@ public class CultRole : Impostor
         RoleHolder roleHolder = target.NameModel().GetComponentHolder<RoleHolder>();
         string newRoleName = CultColor.Colorize(role.RoleName);
         roleHolder.Add(new RoleComponent(new LiveString(newRoleName), Game.InGameStates, ViewMode.Replace, target));
-        role.Faction = FactionInstances.GetExternalFaction(LotusBloom.FactionTypes["Cultist.Origin"]);
+        role.Faction = FactionInstances.GetExternalFaction(typeof(Cultist.Origin));
 
         cult.ForEach(p =>
         {
@@ -75,5 +75,5 @@ public class CultRole : Impostor
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .SpecialType(SpecialType.NeutralKilling)
-            .Faction(FactionInstances.GetExternalFaction(LotusBloom.FactionTypes["Cultist.Origin"]));
+            .Faction(FactionInstances.GetExternalFaction(typeof(Cultist.Origin)));
 }

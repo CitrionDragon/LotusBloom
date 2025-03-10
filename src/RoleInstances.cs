@@ -19,6 +19,8 @@ using Lotus.Roles.RoleGroups.Crew;
 using HarmonyLib;
 using System.Reflection;
 
+namespace LotusBloom;
+
 public class RoleInstances
 {
     public static Traitor Traitor = new();

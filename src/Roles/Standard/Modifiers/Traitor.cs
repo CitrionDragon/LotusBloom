@@ -121,19 +121,3 @@ public class Traitor : Subrole
         .RoleAbilityFlags(RoleAbilityFlag.IsAbleToKill);
 
 }
-
-static class Patch
-{
-    [HarmonyPatch(typeof(StandardGameMode), nameof(StandardGameMode.ShowInformationToGhost), typeof(PlayerDeathHookEvent))]
-    [HarmonyPostfix]
-    public static void Postfix(PlayerDeathHookEvent hookEvent)
-    {
-        PlayerControl player = hookEvent.Player;
-        if (Game.CurrentGameMode is not StandardGameMode) return;
-        if (Game.MatchData.MeetingsCalled > 1) return;
-        List<PlayerControl> candidates = Players.GetPlayers().Where(p => !p.Data.IsDead && p.PrimaryRole().Faction is Crewmates).ToList();
-        if (candidates.Count == 0) return;
-        PlayerControl candidate = candidates.GetRandom();
-        if (player.PrimaryRole().Faction.GetType() == typeof(ImpostorFaction)) StandardGameMode.Instance.Assign(candidate, RoleInstances.Traitor, false);
-    }
-}

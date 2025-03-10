@@ -16,7 +16,7 @@ namespace LotusBloom.Roles.Standard.Cult;
 
 public class CultWinCondition : IFactionWinCondition
 {
-    private static readonly List<IFaction> CultFactions = new() { FactionInstances.GetExternalFaction(LotusBloom.FactionTypes["Cultist.Origin"]), new Cultist.Initiated(null!, null!) };
+    private static readonly List<IFaction> CultFactions = [ FactionInstances.GetExternalFaction(typeof(Cultist.Origin)), new Cultist.Initiated(null!, null!) ];
     public List<IFaction> Factions() => CultFactions;
 
     public bool IsConditionMet(out List<IFaction> factions)
@@ -30,7 +30,7 @@ public class CultWinCondition : IFactionWinCondition
         foreach (CustomRole role in Players.GetAlivePlayers().Select(p => p.PrimaryRole()))
         {
             if (role is CultLeader) cultLeaderAlive = true;
-            if (role.Faction == FactionInstances.GetExternalFaction(LotusBloom.FactionTypes["Cultist.Origin"])) aliveCult++;
+            if (role.Faction == FactionInstances.GetExternalFaction(typeof(Cultist.Origin))) aliveCult++;
             else aliveOther++;
         }
 
