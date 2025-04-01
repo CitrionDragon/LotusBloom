@@ -26,20 +26,29 @@ namespace LotusBloom.Roles.Standard.Modifiers;
 public class Radar : Subrole
 {
     private PlayerControl Lastplayer;
+    private Color Lastcolor;
     [NewOnSetup] private List<Remote<IndicatorComponent>> indicatorComponents = null!;
 
     [RoleAction(LotusActionType.FixedUpdate)]
     public void GetNearestPlayer()
     {
-        
-        PlayerControl? closestPlayer = RoleUtils.GetPlayersWithinDistance(MyPlayer,100,true).FirstOrDefault();
-        if (closestPlayer == null||closestPlayer == Lastplayer) return;
+        Color color = Color.black;
+        PlayerControl selectedPlayer = null;
+        PlayerControl? closestPlayer;
+        closestPlayer = RoleUtils.GetPlayersWithinDistance(MyPlayer,100,true).FirstOrDefault();
+        if (closestPlayer != null) {color = Color.red; selectedPlayer = closestPlayer;}
+        closestPlayer = RoleUtils.GetPlayersWithinDistance(MyPlayer,6f,true).FirstOrDefault();
+        if (closestPlayer != null) {color = Color.yellow; selectedPlayer = closestPlayer;}
+        closestPlayer = RoleUtils.GetPlayersWithinDistance(MyPlayer,3f,true).FirstOrDefault();
+        if (closestPlayer != null) {color = Color.green; selectedPlayer = closestPlayer;}
+        if (color == Color.black||(selectedPlayer == Lastplayer & color == Lastcolor)) return;
         indicatorComponents.ForEach(c => c.Delete());
         indicatorComponents.Clear();
-        LiveString liveString = new(() => RoleUtils.CalculateArrow(MyPlayer, closestPlayer, RoleColor));
+        LiveString liveString = new(() => RoleUtils.CalculateArrow(MyPlayer, selectedPlayer, color));
         var remote = MyPlayer.NameModel().GetComponentHolder<IndicatorHolder>().Add(new IndicatorComponent(liveString, GameState.Roaming, viewers: MyPlayer));
         indicatorComponents.Add(remote);
-        Lastplayer = closestPlayer;
+        Lastplayer = selectedPlayer;
+        Lastcolor = color;
     }
 
     protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Modifiers.Radar.yaml";

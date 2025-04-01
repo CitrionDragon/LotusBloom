@@ -144,5 +144,5 @@ public class Initiator : CultRole
             .CanVent(false)
             .OptionOverride(new IndirectKillCooldown(convertCooldown.Duration))
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
-    protected override List<CustomRole> LinkedRoles() => base.LinkedRoles().Concat(new List<CustomRole>() { CultLeader }).ToList();
+    public override List<CustomRole> LinkedRoles() => base.LinkedRoles().Concat(new List<CustomRole>() { CultLeader }).ToList();
 }

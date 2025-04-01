@@ -129,7 +129,7 @@ public class CultLeader : CultRole
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(new Color(0.8f, 0.36f, 0.8f))
-            .RoleFlags(RoleFlag.VariationRole)
+            .RoleFlags(RoleFlag.TransformationRole)
             .CanVent(false)
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 }
