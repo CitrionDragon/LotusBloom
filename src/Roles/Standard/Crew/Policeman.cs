@@ -37,6 +37,8 @@ using VentLib.Utilities.Collections;
 using VentLib.Options.UI.Options;
 using Lotus.Roles.RoleGroups.Crew;
 using Lotus.Roles.RoleGroups.Impostors;
+using Lotus.Roles.Subroles;
+using LotusBloom.Roles.Standard.Neutral.Passive;
 
 namespace LotusBloom.Roles.Standard.Crew;
 
@@ -92,7 +94,11 @@ public class Policeman : Crewmate
     private int InterrogateHandcuffChance;
     private int BreakChance;
     private int KbAction = 0; //0 = Interrogate, 1 = Kill, 2 = Free
-    protected override void PostSetup() => handcuffs = totalhandcuffs;
+    protected override void PostSetup()
+    {
+        handcuffs = totalhandcuffs;
+        Rogue.IncompatibleRoles.Add(typeof(Policeman));
+    }
 
     [UIComponent(UI.Cooldown)]
     private Cooldown handcuffCooldown;

@@ -54,7 +54,17 @@ public class Socializer : Subrole
     [RoleAction(LotusActionType.FixedUpdate)]
     public void FixedUpdate()
     {
-        if (Game.State is GameState.InMeeting) return;
+        if (Game.State is GameState.InMeeting)
+        {
+            if (socializetime.IsReady()) return;
+            if (!paused)
+            {
+                socializetime.SetDuration(starttime);
+            }
+            socializetime.Start();
+            paused=true;
+            return;
+        }
         nearbyplayers = RoleUtils.GetPlayersWithinDistance(MyPlayer, 2f).Count();
         if (nearbyplayers < 2)
         {

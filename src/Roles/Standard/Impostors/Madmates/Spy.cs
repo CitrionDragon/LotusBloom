@@ -231,6 +231,12 @@ public class Spy: MadCrewmate
                 .BindInt(i => tasksForFaction = i)
                 .Build());
 
+    protected override RoleModifier Modify(RoleModifier roleModifier) =>
+        base.Modify(roleModifier)
+            .SpecialType(SpecialType.Madmate)
+            .RoleColor(new Color(0.73f, 0.18f, 0.02f))
+            .Faction(FactionInstances.Madmates);
+
     [Localized(nameof(Spy))]
     private static class Translations
     {

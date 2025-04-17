@@ -36,7 +36,7 @@ public class Supporter : Subrole
         {
             if (!AffectedCd.ContainsKey(p))
             {
-                MultiplicativeOverride multiplicativeOverride = new(Override.KillCooldown, (100f - CooldownReduction    ) / 100f);
+                MultiplicativeOverride multiplicativeOverride = new(Override.KillCooldown, (100f - CooldownReduction) / 100f);
                 AffectedCd[p] = Game.MatchData.Roles.AddOverride(p.PlayerId, multiplicativeOverride);
                 p.PrimaryRole().SyncOptions();
             }

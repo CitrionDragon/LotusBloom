@@ -59,7 +59,10 @@ public class Harbinger : TaskRoleBase
     }
 
     [UIComponent(UI.Counter)]
-    private string TaskCheck() => RoleUtils.Counter(taskCount, tasksBeforeCircle, RoleColor);
+    private string TaskCheck() => RoleUtils.Counter(taskCount, tasksBeforeCircle, Color.yellow);
+
+    [UIComponent(UI.Counter)]
+    private string RitualCheck() => RoleUtils.Counter(ritualCount, circleToWin, RoleColor);
 
     [UIComponent(UI.Indicator)]
     private string RitualIndicator() => taskCount == tasksBeforeCircle ? RoleUtils.CalculateArrow(MyPlayer, targetLocation, RoleColor) : "";
@@ -120,6 +123,7 @@ public class Harbinger : TaskRoleBase
             return;
         }
         DevLogger.Log("Completed one!!");
+        circleProgress?.Delete();
         ritualCount++;
         taskCount = 0;
         if (!MyPlayer.IsAlive()) return;

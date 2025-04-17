@@ -96,7 +96,8 @@ public class Shade: Impostor
         newRole = StandardGameMode.Instance.RoleManager.GetCleanRole(myRole);
         Game.AssignRole(target, newRole);
         role = target.PrimaryRole();
-        //role.Assign();
+        role.Assign();
+        
         swapCooldown.Start();
     }
 

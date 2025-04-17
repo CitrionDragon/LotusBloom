@@ -33,6 +33,9 @@ using Lotus.API.Reactive.HookEvents;
 using HarmonyLib;
 using Lotus.API.Player;
 using System.Reflection;
+using Lotus.Roles.Overrides;
+using VentLib.Utilities.Optionals;
+using Lotus.Roles.Properties;
 
 namespace LotusBloom.Roles.Standard.Modifiers;
 
@@ -98,6 +101,13 @@ public class Traitor : Subrole
 
     public override bool IsAssignableTo(PlayerControl player)
     {
+        int count = RoleInstances.Traitor.Count;
+        int traitors = Players.GetPlayers(PlayerFilter.NonPhantom).Count(p => p.GetSubroles().Contains(RoleInstances.Traitor));
+        if (traitors >= count) return false;
+        System.Random random = new System.Random();
+        int randomnumber = random.Next(0, 100);
+        int chance = RoleInstances.Traitor.Chance;
+        if (randomnumber > chance) return false;
         if (player.PrimaryRole().Faction is Crewmates) return base.IsAssignableTo(player);
         else return false;
     }
@@ -129,6 +139,7 @@ public class Traitor : Subrole
     protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier)
         .RoleColor(Color.red)
         .RoleFlags(RoleFlag.Unassignable)
-        .RoleAbilityFlags(RoleAbilityFlag.IsAbleToKill);
+        .RoleAbilityFlags(RoleAbilityFlag.IsAbleToKill)
+        .OptionOverride(Override.CrewLightMod, () => AUSettings.ImpostorLightMod());
 
 }
