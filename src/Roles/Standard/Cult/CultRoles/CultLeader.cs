@@ -30,7 +30,6 @@ using Lotus.GameModes.Standard;
 using Lotus.Roles;
 using Lotus.Factions.Neutrals;
 using Lotus.Factions.Impostors;
-using Lotus.Factions.Crew;
 using Lotus.Roles.Events;
 using LotusBloom.Factions.Cult;
 
@@ -68,7 +67,7 @@ public class CultLeader : CultRole
     }
 
     [RoleAction(LotusActionType.Attack)]
-    private bool LeaderKill(PlayerControl target)
+    public override bool TryKill(PlayerControl target)
     {
         killCooldown.Start(AUSettings.KillCooldown());
         return base.TryKill(target);
@@ -120,8 +119,8 @@ public class CultLeader : CultRole
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddKillCooldownOptions(base.RegisterOptions(optionStream)
             .SubOption(sub2 => sub2.Name("Limited Cultist Kill Range")
+                .AddBoolean(false)
                 .BindBool(b => limitedKillRange = b)
-                .AddOnOffValues(false)
                 .Build()));
 
     protected override RoleType GetRoleType() => RoleType.Transformation;

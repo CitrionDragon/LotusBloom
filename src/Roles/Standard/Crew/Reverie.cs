@@ -69,7 +69,7 @@ public partial class Reverie : Crewmate
             paused = true;
             return;
         }
-
+        
         //VentLogger.Trace($"Reverie ({MyPlayer.name}) Commiting Suicide", "Reverie::CheckForSuicide");
 
         MyPlayer.InteractWith(MyPlayer, new UnblockedInteraction(new FatalIntent(), this));

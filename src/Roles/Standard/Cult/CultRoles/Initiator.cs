@@ -30,7 +30,6 @@ using Lotus.GameModes.Standard;
 using Lotus.Roles;
 using Lotus.Factions.Neutrals;
 using Lotus.Factions.Impostors;
-using Lotus.Factions.Crew;
 using System.Xml.Serialization;
 using LotusBloom.Factions.Cult;
 using Rewired;
@@ -86,7 +85,7 @@ public class Initiator : CultRole
     }
 
     [RoleAction(LotusActionType.Attack)]
-    private bool NecromancerConvert(PlayerControl? target)
+    private bool NecromancerConvert(PlayerControl target)
     {
         if (target == null) return false;
         if (MyPlayer.InteractWith(target, LotusInteraction.HostileInteraction.Create(this)) is InteractionResult.Halt) return false;
@@ -103,6 +102,7 @@ public class Initiator : CultRole
         var counterHolder = MyPlayer.NameModel().GetComponentHolder<CounterHolder>();
         if (counterHolder.Count > 0) counterHolder.RemoveAt(0);
         StandardGameMode.Instance.Assign(MyPlayer, CultLeader);
+        disableWinCheck = true;
         return false;
     }
 
@@ -135,7 +135,7 @@ public class Initiator : CultRole
                 .BindFloat(convertCooldown.SetDuration)
                 .Build())
             .SubOption(sub => sub.Name("Change Role in Meeting")
-                .AddOnOffValues()
+                .AddBoolean(true)
                 .BindBool(b => changeInMeeting = b)
                 .Build());
     protected override RoleModifier Modify(RoleModifier roleModifier) =>

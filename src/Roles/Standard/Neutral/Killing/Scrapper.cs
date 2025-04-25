@@ -60,6 +60,9 @@ public class Scrapper: Engineer, ISabotagerRole
     private int spikedCost;
     private int laserCost;
     private int adrenalineCost;
+    private int craftCount;
+    private int maxCrafts;
+    private bool isCrafting = true;
 
     [NewOnSetup] private HashSet<byte> killedPlayers = null!;
     private bool spiked;
@@ -75,9 +78,10 @@ public class Scrapper: Engineer, ISabotagerRole
     private float cooldowndecrease;
     private float speedGainPerKill;
     private float originalCooldown;
-    private Remote<GameOptionOverride>? remote;
+    private Remote<GameOptionOverride> remote;
     private bool preciseShooting;
     private Vector2 startingLocation;
+    private bool aiming;
 
     public static string ShopMessage =
         "You can craft items during meetings. Only items you have enough scrap for will show. To craft an item, first vote yourself until that item is selected. Then skip to continue.\nVoting for ANY OTHER player will count as your vote for that player, otherwise you will still remain in shop mode.";
@@ -127,7 +131,7 @@ public class Scrapper: Engineer, ISabotagerRole
         _colorizedScrap = TranslationUtil.Colorize("Scrap::0: {0}", ScrapColor);
         shopItems = new ShopItem[]
         {
-            new("Nothing", Color.gray, 0, true, () =>shopItems[0].Enabled = true),
+            new("End Crafting", Color.gray, 0, true, () => craftCount = maxCrafts),
             new("Scrap Knife", _knifeColor, modifyShopCosts ? knifeCost : 5, true, () =>
             {
                 hasKnife = true;
@@ -161,6 +165,8 @@ public class Scrapper: Engineer, ISabotagerRole
     [RoleAction(LotusActionType.RoundStart)]
     private void RoundStart()
     {
+        craftCount = 0;
+        isCrafting = true;
         hasVoted = false;
         if (hasKnife) knifeCooldown.Start();
         selectedShopItem = byte.MaxValue;
@@ -196,9 +202,14 @@ public class Scrapper: Engineer, ISabotagerRole
     [RoleAction(LotusActionType.OnPet)]
     private void KillWithKnife()
     {
-        if (!hasKnife) return;
+        if (!hasKnife&&!aiming) return;
+        if (aiming) 
+        {
+            FireBullet();
+            return;
+        }
         if (knifeCooldown.NotReady()) return;
-        PlayerControl? closestPlayer = MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault(p => Relationship(p) is not Relation.FullAllies);
+        PlayerControl closestPlayer = MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault(p => Relationship(p) is not Relation.FullAllies);
         if (closestPlayer == null) return;
         if (hasAdrenaline)
         {
@@ -216,9 +227,10 @@ public class Scrapper: Engineer, ISabotagerRole
     {
         if (!hasLaser) return;
         startingLocation = MyPlayer.GetTruePosition();
+        aiming=true;
         // DevLogger.Log($"Starting position: {startingLocation}");
     }
-    [RoleAction(LotusActionType.OnPetRelease)]
+    //[RoleAction(LotusActionType.OnPetRelease)]
     private bool FireBullet()
     {
         if (!hasLaser) return false;
@@ -318,6 +330,38 @@ public class Scrapper: Engineer, ISabotagerRole
         }, () => HandleSkip(handle));
     }
 
+    private void HandleSelfVote(ActionHandle handle)
+    {
+        //if (!isCrafting) return;
+        if (hasVoted) return;
+        if (currentShopItems.Length == 0) return;
+        handle.Cancel();
+        if (selectedShopItem == byte.MaxValue) selectedShopItem = 0;
+        else selectedShopItem++;
+        if (selectedShopItem >= currentShopItems.Length) selectedShopItem = 0;
+        ShopItem item = currentShopItems[selectedShopItem];
+        GetChatHandler().Message(SelectedItemMessage.Formatted(item.Name, scrapAmount - item.Cost)).Send();
+    }
+
+    private void HandleSkip(ActionHandle handle)
+    {
+        if (selectedShopItem == byte.MaxValue) return;
+        if (selectedShopItem >= currentShopItems.Length)
+        {
+            handle.Cancel();
+            return;
+        }
+        ShopItem item = currentShopItems[selectedShopItem];
+        scrapAmount -= item.Cost;
+        craftCount++;
+        if (item.Color != _knifeColor && scrapAmount > 0 && hasVoted) handle.Cancel();
+        GetChatHandler().Message(PurchaseItemMessage.Formatted(item.Name, scrapAmount)).Send();
+        item.Action();
+        currentShopItems = shopItems.Where(si => si.Enabled && si.Cost <= scrapAmount).ToArray();
+        if (isCrafting) handle.Cancel();
+        if (craftCount >= maxCrafts) isCrafting = false;
+    }
+
     [RoleAction(LotusActionType.Interaction)]
     private void HandleInteraction(PlayerControl actor, Interaction interaction, ActionHandle handle)
     {
@@ -356,34 +400,6 @@ public class Scrapper: Engineer, ISabotagerRole
         if (HasAllTasksComplete && refreshTasks) AssignAdditionalTasks();
     }
 
-    private void HandleSelfVote(ActionHandle handle)
-    {
-        if (hasVoted) return;
-        if (currentShopItems.Length == 0) return;
-        handle.Cancel();
-        if (selectedShopItem == byte.MaxValue) selectedShopItem = 0;
-        else selectedShopItem++;
-        if (selectedShopItem >= currentShopItems.Length) selectedShopItem = 0;
-        ShopItem item = currentShopItems[selectedShopItem];
-        GetChatHandler().Message(SelectedItemMessage.Formatted(item.Name, scrapAmount - item.Cost)).Send();
-    }
-
-    private void HandleSkip(ActionHandle handle)
-    {
-        if (selectedShopItem == byte.MaxValue) return;
-        if (selectedShopItem >= currentShopItems.Length)
-        {
-            handle.Cancel();
-            return;
-        }
-        ShopItem item = currentShopItems[selectedShopItem];
-        scrapAmount -= item.Cost;
-        if (item.Color != _knifeColor && scrapAmount > 0 && hasVoted) handle.Cancel();
-        GetChatHandler().Message(PurchaseItemMessage.Formatted(item.Name, scrapAmount)).Send();
-        item.Action();
-        currentShopItems = shopItems.Where(si => si.Enabled && si.Cost <= scrapAmount).ToArray();
-    }
-
     private ChatHandler GetChatHandler() => ChatHandler.Of(title: RoleColor.Colorize(RoleName)).Player(MyPlayer).LeftAlign();
 
     public bool CanSabotage() => true;
@@ -393,7 +409,7 @@ public class Scrapper: Engineer, ISabotagerRole
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub.Name("Modify Shop Costs")//, ModifyShopCosts)
-                .AddOnOffValues(false)
+                .AddBoolean(false)
                 .BindBool(b => modifyShopCosts = b)
                 .ShowSubOptionPredicate(b => (bool)b)
                 .SubOption(sub2 => sub2.Name("Knife Cost")//, KnifeCost)
@@ -421,8 +437,12 @@ public class Scrapper: Engineer, ISabotagerRole
                     .BindInt(i => adrenalineCost = i)
                     .Build())
                 .Build())
+            .SubOption(sub => sub.Name("Crafts per Meeting")//, ScrapFromReporting)
+                .AddIntRange(1, 5, 1, 1)
+                .BindInt(i => maxCrafts = i)
+                .Build())
             .SubOption(sub => sub.Name("Starts Game WIth Knife")//, StartsGameWithKnife)
-                .AddOnOffValues(false)
+                .AddBoolean(false)
                 .BindBool(b => hasKnife = b)
                 .Build())
             .SubOption(sub => sub.Name("Knife Cooldown")//, KnifeCooldown)
@@ -431,16 +451,16 @@ public class Scrapper: Engineer, ISabotagerRole
                 .BindFloat(knifeCooldown.SetDuration)
                 .Build())
             .SubOption(sub => sub.Name("Scrap Laser")
-                .AddOnOffValues(false)
+                .AddBoolean(false)
                 .BindBool(b => laser = b)
                 .ShowSubOptionPredicate(b => (bool)b)
                 .SubOption(sub => sub.Name("Precise Shooting")
-                    .AddOnOffValues(false)
+                    .AddBoolean(false)
                     .BindBool(b => preciseShooting = b)
                     .Build())
                 .Build())
             .SubOption(sub => sub.Name("Adrenaline")
-                .AddOnOffValues(false)
+                .AddBoolean(false)
                 .BindBool(b => adrenaline = b)
                 .ShowSubOptionPredicate(b => (bool)b)
                 .SubOption(sub => sub.Name("Cooldown Decrease per Kill")
@@ -453,7 +473,7 @@ public class Scrapper: Engineer, ISabotagerRole
                     .BindFloat(f => speedGainPerKill = f)
                     .Build())
                 .SubOption(sub => sub.Name("Adrenaline Reset on Meeting")
-                    .AddOnOffValues(false)
+                    .AddBoolean(false)
                     .BindBool(b => adrenalineReset = b)
                     .Build())
                 .Build())
@@ -462,7 +482,7 @@ public class Scrapper: Engineer, ISabotagerRole
                 .BindInt(i => scrapFromBodies = i)
                 .Build())
             .SubOption(sub => sub.Name("Refresh Tasks When All Complete")//, RefreshTasks)
-                .AddOnOffValues()
+                .AddBoolean(true)
                 .BindBool(b => refreshTasks = b)
                 .Build());
 //Ultimates (Landmine, Laser, Adrenaline)

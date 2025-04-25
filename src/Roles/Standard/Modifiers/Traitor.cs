@@ -46,6 +46,8 @@ public class Traitor : Subrole
     private List<Color> colorGradient;
 
     public int roundUntilSpawn;
+    public int maximp;
+    public int minplayers;
 
     [RoleAction(LotusActionType.Attack)]
     private bool TryKill(PlayerControl target)
@@ -78,43 +80,28 @@ public class Traitor : Subrole
         roleHolder.Add(new RoleComponent(new LiveString(newRoleName), Game.InGameStates, ViewMode.Replace, MyPlayer));
         requiresBaseKillMethod = !role.GetActions(LotusActionType.Attack).Any();
     }
-/*
-    [RoleAction(LotusActionType.Exiled, ActionFlag.GlobalDetector)]
-    private void Exiled(PlayerControl exiled)
-    {
-        if (exiled == null) return;
-        if (exiled.PrimaryRole().Faction is ImpostorFaction) revealed = true;
-    }
-
-    [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
-    public void CheckPlayerDeath(PlayerControl target)
-    {
-        if (target.PrimaryRole().Faction is ImpostorFaction) revealed = true;
-    }
-
-    [RoleAction(LotusActionType.Disconnect, ActionFlag.GlobalDetector)]
-    public void CheckPlayerDc(PlayerControl target)
-    {
-        if (target.PrimaryRole().Faction is ImpostorFaction) revealed = true;
-    }
-*/
 
     public override bool IsAssignableTo(PlayerControl player)
     {
         int count = RoleInstances.Traitor.Count;
-        int traitors = Players.GetPlayers(PlayerFilter.NonPhantom).Count(p => p.GetSubroles().Contains(RoleInstances.Traitor));
+        int traitors = Players.GetPlayers().Count(p => p.GetSubroles().Contains(RoleInstances.Traitor));
         if (traitors >= count) return false;
         System.Random random = new System.Random();
         int randomnumber = random.Next(0, 100);
         int chance = RoleInstances.Traitor.Chance;
         if (randomnumber > chance) return false;
+        int aliveimps = Players.GetAliveImpostors().Count();
+        if (aliveimps > maximp) return false;
+        int aliveplayers = Players.GetAlivePlayers().Count();
+        if (aliveplayers < minplayers) return false;
+        if (RestrictedRoles().Contains(player.PrimaryRole().GetType())) return false;
         if (player.PrimaryRole().Faction is Crewmates) return base.IsAssignableTo(player);
         else return false;
     }
 
-    public override HashSet<Type>? RestrictedRoles()
+    public override HashSet<Type> RestrictedRoles()
     {
-        HashSet<Type>? restrictedRoles = base.RestrictedRoles();
+        HashSet<Type> restrictedRoles = base.RestrictedRoles();
         if (!restrictedToCompatibleRoles) return restrictedRoles;
         Rogue.IncompatibleRoles.ForEach(r => restrictedRoles?.Add(r));
         return restrictedRoles;
@@ -128,11 +115,19 @@ public class Traitor : Subrole
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub.Name("Restrict to Compatible Roles")//, Translations.Options.RestrictToCompatbileRoles)
+                .AddBoolean(true)
                 .BindBool(b => restrictedToCompatibleRoles = b)
-                .AddOnOffValues()
                 .Build())
             .SubOption(sub => sub.Name("Rounds until Traitor can Spawn")//, Translations.Options.BloomsUntilRoleReveal)
                 .AddIntRange(0, 10, 1, 3)
+                .BindInt(i => roundUntilSpawn = i)
+                .Build())
+            .SubOption(sub => sub.Name("Max Imps Alive for Traitor to Spawn")//, Translations.Options.BloomsUntilRoleReveal)
+                .AddIntRange(0, 3, 1, 1)
+                .BindInt(i => maximp = i)
+                .Build())
+            .SubOption(sub => sub.Name("Minimum Players for Traitor to Spawn")//, Translations.Options.BloomsUntilRoleReveal)
+                .AddIntRange(0, 15, 1, 3)
                 .BindInt(i => roundUntilSpawn = i)
                 .Build());
 

@@ -34,7 +34,7 @@ public class Radar : Subrole
     {
         Color color = Color.black;
         PlayerControl selectedPlayer = null;
-        PlayerControl? closestPlayer;
+        PlayerControl closestPlayer;
         closestPlayer = RoleUtils.GetPlayersWithinDistance(MyPlayer,100,true).FirstOrDefault();
         if (closestPlayer != null) {color = Color.red; selectedPlayer = closestPlayer;}
         closestPlayer = RoleUtils.GetPlayersWithinDistance(MyPlayer,6f,true).FirstOrDefault();

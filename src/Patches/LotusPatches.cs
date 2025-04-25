@@ -54,8 +54,8 @@ public static class LotusPatches
             List<PlayerControl> candidates = Players.GetPlayers().Where(p => p.IsAlive() && p.PrimaryRole().Faction is Crewmates).ToList();
             _log.Debug($"Possible Crew {candidates.Count}");
             if (candidates.Count == 0) return;
-        
             PlayerControl candidate = candidates.GetRandom();
+            if (!RoleInstances.Traitor.IsAssignableTo(candidate)) return;
             StandardGameMode.Instance.Assign(candidate, RoleInstances.Traitor, false);
         }
     }

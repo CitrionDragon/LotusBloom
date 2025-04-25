@@ -83,7 +83,7 @@ public class Policeman : Crewmate
     private int handcuffs;
     private float handcuffSpeed;
     private bool dragging = false;
-    private PlayerControl handcuffedplayer;
+    private PlayerControl handcuffedplayer = null;
     [NewOnSetup] private Dictionary<byte, Escort.BlockDelegate> blockedPlayers;
     Remote<GameOptionOverride> optionOverride;
     [NewOnSetup] private Dictionary<byte, Remote<IndicatorComponent>> playerRemotes = null!;
@@ -182,7 +182,7 @@ public class Policeman : Crewmate
     [RoleAction(LotusActionType.OnPet)]
     public void OnPet()
     {
-        PlayerControl? closestPlayer = MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault();
+        PlayerControl closestPlayer = MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault();
         if (closestPlayer == null)
         {
             KbAction++;
@@ -219,6 +219,7 @@ public class Policeman : Crewmate
     [RoleAction(LotusActionType.RoundEnd)]
     public void RemoveHandcuff()
     {
+        if (handcuffedplayer == null) return;
         playerRemotes!.GetValueOrDefault(handcuffedplayer.PlayerId, null)?.Delete();
         optionOverride.Delete();
         handcuffedplayer.PrimaryRole().SyncOptions();
@@ -250,7 +251,7 @@ public class Policeman : Crewmate
     [RoleAction(LotusActionType.VentEntered, ActionFlag.GlobalDetector)]
     private void Block(PlayerControl source, ActionHandle handle)
     {
-        Escort.BlockDelegate? blockDelegate = blockedPlayers.GetValueOrDefault(source.PlayerId);
+        Escort.BlockDelegate blockDelegate = blockedPlayers.GetValueOrDefault(source.PlayerId);
         if (blockDelegate == null) return;
 
         handle.Cancel();
@@ -260,7 +261,7 @@ public class Policeman : Crewmate
     [RoleAction(LotusActionType.SabotageStarted, ActionFlag.GlobalDetector)]
     private void BlockSabotage(PlayerControl caller, ActionHandle handle)
     {
-        Escort.BlockDelegate? blockDelegate = blockedPlayers.GetValueOrDefault(caller.PlayerId);
+        Escort.BlockDelegate blockDelegate = blockedPlayers.GetValueOrDefault(caller.PlayerId);
         if (blockDelegate == null) return;
 
         handle.Cancel();

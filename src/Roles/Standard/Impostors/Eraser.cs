@@ -39,8 +39,6 @@ namespace LotusBloom.Roles.Standard.Impostors;
 
 public class Eraser: Impostor
 {
-    private static Color eraseColor = new(0.37f, 0.74f, 0.35f);
-    private bool isEraseMode = true;
     private Cooldown eraseCooldown= null!;
     private float originalCooldown;
     private float cooldownIncrease;
@@ -74,7 +72,7 @@ public class Eraser: Impostor
     public void TryErase()
     {
         if (eraseCooldown.NotReady()) return;
-        PlayerControl? target = MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault(p => Relationship(p) is not Relation.FullAllies);
+        PlayerControl target = MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault(p => Relationship(p) is not Relation.FullAllies);
         if (target == null) return;
         MyPlayer.RpcMark(target);
         if (MyPlayer.InteractWith(target, LotusInteraction.HostileInteraction.Create(this)) is InteractionResult.Halt) return;
@@ -132,7 +130,7 @@ public class Eraser: Impostor
                 .BindFloat(v => cooldownIncrease = v)
                 .Build())
             .SubOption(sub => sub.Name("Erase Takes Effect on Meeting")
-                .AddOnOffValues(false)
+                .AddBoolean(false)
                 .BindBool(b => meetingErase = b)
                 .Build())
             .SubOption(sub => sub

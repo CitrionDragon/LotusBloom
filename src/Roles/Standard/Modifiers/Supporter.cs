@@ -32,25 +32,25 @@ public class Supporter : Subrole
     {
         if (Game.State is GameState.InMeeting) return;
         List<PlayerControl> nearbyallies = RoleUtils.GetPlayersWithinDistance(MyPlayer, 2f).Where(IsAllies).ToList();
+        AffectedCd.ForEach(pid =>
+        {
+            if (!nearbyallies.Contains(pid.Key))
+            {
+                pid.Value.Delete();
+                pid.Key.PrimaryRole().SyncOptions();
+                AffectedCd.Remove(pid.Key);
+            }
+        });
         nearbyallies.ForEach(p =>
         {
             if (!AffectedCd.ContainsKey(p))
             {
                 MultiplicativeOverride multiplicativeOverride = new(Override.KillCooldown, (100f - CooldownReduction) / 100f);
-                AffectedCd[p] = Game.MatchData.Roles.AddOverride(p.PlayerId, multiplicativeOverride);
+                AffectedCd.Add(p, Game.MatchData.Roles.AddOverride(p.PlayerId, multiplicativeOverride));
                 p.PrimaryRole().SyncOptions();
             }
         });
-        AffectedCd.ForEach(pid =>
-        {
-            PlayerControl player = pid.Key;
-            if (!nearbyallies.Contains(player))
-            {
-                AffectedCd.Remove(pid.Key);
-                pid.Value.Delete();
-                player.PrimaryRole().SyncOptions();
-            }
-        });
+    
     }
     private bool IsAllies(PlayerControl player)
     {
@@ -60,7 +60,7 @@ public class Supporter : Subrole
 
     public override bool IsAssignableTo(PlayerControl player)
     {
-        if (player.PrimaryRole().Faction.GetType()==typeof(ImpostorFaction)||(MadmateAddon&player.PrimaryRole().Faction.GetType()==typeof(Madmates))) base.IsAssignableTo(player);
+        if (player.PrimaryRole().Faction.GetType()==typeof(ImpostorFaction)||(MadmateAddon&player.PrimaryRole().Faction.GetType()==typeof(Madmates))) return base.IsAssignableTo(player);
         return false;
     }
 

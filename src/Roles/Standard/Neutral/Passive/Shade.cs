@@ -36,6 +36,7 @@ using Lotus.Factions;
 using Il2CppSystem.Runtime.Remoting.Messaging;
 using Lotus.Roles.Subroles;
 using VentLib.Logging;
+using Il2CppSystem.Dynamic.Utils;
 
 namespace LotusBloom.Roles.Standard.Neutral.Passive;
 
@@ -45,7 +46,19 @@ public class Shade: Impostor
     private Cooldown swapCooldown= null!;
     private bool cantCallMeetings;
     private bool cantreport;
-    private IRemote? cooldownOverride;
+    private bool isHostile;
+    private IRemote cooldownOverride;
+    [NewOnSetup] private List<CustomRole> targetSubroles = null!;
+    [NewOnSetup] private List<CustomRole> mySubroles = null!;
+
+    protected override void Setup(PlayerControl player)
+    {
+        MyPlayer.NameModel().GetComponentHolder<IndicatorHolder>().Components().ForEach(c => c.RemoveViewer(MyPlayer.PlayerId));
+        MyPlayer.NameModel().GetComponentHolder<CooldownHolder>().Components().ForEach(c => c.RemoveViewer(MyPlayer.PlayerId));
+        MyPlayer.NameModel().GetComponentHolder<TextHolder>().Components().ForEach(c => c.RemoveViewer(MyPlayer.PlayerId));
+        MyPlayer.NameModel().GetComponentHolder<SubroleHolder>().Components().ForEach(c => c.RemoveViewer(MyPlayer.PlayerId));
+        base.Setup(player);
+    }
     
     protected override void PostSetup()
     {
@@ -62,19 +75,31 @@ public class Shade: Impostor
         if (swapCooldown.NotReady()) return false;
         if (target == null) return false;
         MyPlayer.RpcMark(target);
-        if (MyPlayer.InteractWith(target, LotusInteraction.HostileInteraction.Create(this)) is InteractionResult.Halt) return false;
+        if (isHostile)
+        {
+            if (MyPlayer.InteractWith(target, LotusInteraction.HostileInteraction.Create(this)) is InteractionResult.Halt) return false;
+        }
+        else if (MyPlayer.InteractWith(target, LotusInteraction.NeutralInteraction.Create(this)) is InteractionResult.Halt) return false;
         CustomRole targetRole = target.PrimaryRole();
+        targetSubroles.Clear();
+        target.GetSubroles().ForEach(sub => targetSubroles.Add(sub));
         CustomRole myRole = MyPlayer.PrimaryRole();
+        mySubroles.Clear();
+        MyPlayer.GetSubroles().ForEach(sub => mySubroles.Add(sub));
         //StandardRoles roleHolder = StandardGameMode.Instance.RoleManager.RoleHolder;
-        CustomRole newRole = StandardGameMode.Instance.RoleManager.GetCleanRole(targetRole);
-        Game.AssignRole(MyPlayer, newRole);
-        CustomRole role = MyPlayer.PrimaryRole();
-        role.Assign();
-        newRole = StandardGameMode.Instance.RoleManager.GetCleanRole(myRole);
+        CustomRole newRole = StandardGameMode.Instance.RoleManager.GetCleanRole(myRole);
         Game.AssignRole(target, newRole);
-        role = target.PrimaryRole();
+        targetSubroles.ForEach(sub => target.GetSubroles().Remove(sub));
+        CustomRole role = target.PrimaryRole();
         role.Assign();
-        //swapCooldown.Start();
+        mySubroles.ForEach(sub => Game.AssignSubRole(target, sub));
+        newRole = StandardGameMode.Instance.RoleManager.GetCleanRole(targetRole);
+        Game.AssignRole(MyPlayer, newRole);
+        mySubroles.ForEach(sub => MyPlayer.GetSubroles().Remove(sub));
+        role = MyPlayer.PrimaryRole();
+        role.Assign();
+        MyPlayer.NameModel().GetComponentHolder<SubroleHolder>().Components().ForEach(c => c.RemoveViewer(MyPlayer.PlayerId));
+        targetSubroles.ForEach(sub => Game.AssignSubRole(MyPlayer, sub));
         return false;
     }
 
@@ -82,23 +107,34 @@ public class Shade: Impostor
     public void SwapRoles()
     {
         if (swapCooldown.NotReady()) return;
-        PlayerControl? target = MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault(p => Relationship(p) is not Relation.FullAllies);
+        PlayerControl target = MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault(p => Relationship(p) is not Relation.FullAllies);
         if (target == null) return;
         MyPlayer.RpcMark(target);
-        if (MyPlayer.InteractWith(target, LotusInteraction.HostileInteraction.Create(this)) is InteractionResult.Halt) return;
+        if (isHostile)
+        {
+            if (MyPlayer.InteractWith(target, LotusInteraction.HostileInteraction.Create(this)) is InteractionResult.Halt) return;
+        }
+        else if (MyPlayer.InteractWith(target, LotusInteraction.NeutralInteraction.Create(this)) is InteractionResult.Halt) return;
         CustomRole targetRole = target.PrimaryRole();
+        targetSubroles.Clear();
+        target.GetSubroles().ForEach(sub => targetSubroles.Add(sub));
         CustomRole myRole = MyPlayer.PrimaryRole();
+        mySubroles.Clear();
+        MyPlayer.GetSubroles().ForEach(sub => mySubroles.Add(sub));
         //StandardRoles roleHolder = StandardGameMode.Instance.RoleManager.RoleHolder;
-        CustomRole newRole = StandardGameMode.Instance.RoleManager.GetCleanRole(targetRole);
-        Game.AssignRole(MyPlayer, newRole);
-        CustomRole role = MyPlayer.PrimaryRole();
-        if (ProjectLotus.AdvancedRoleAssignment) role.Assign();
-        newRole = StandardGameMode.Instance.RoleManager.GetCleanRole(myRole);
+        CustomRole newRole = StandardGameMode.Instance.RoleManager.GetCleanRole(myRole);
         Game.AssignRole(target, newRole);
-        role = target.PrimaryRole();
+        targetSubroles.ForEach(sub => target.GetSubroles().Remove(sub));
+        CustomRole role = target.PrimaryRole();
         role.Assign();
-        
-        swapCooldown.Start();
+        mySubroles.ForEach(sub => Game.AssignSubRole(target, sub));
+        newRole = StandardGameMode.Instance.RoleManager.GetCleanRole(targetRole);
+        Game.AssignRole(MyPlayer, newRole);
+        mySubroles.ForEach(sub => MyPlayer.GetSubroles().Remove(sub));
+        role = MyPlayer.PrimaryRole();
+        role.Assign();
+        MyPlayer.NameModel().GetComponentHolder<SubroleHolder>().Components().ForEach(c => c.RemoveViewer(MyPlayer.PlayerId));
+        targetSubroles.ForEach(sub => Game.AssignSubRole(MyPlayer, sub));
     }
 
     [RoleAction(LotusActionType.RoundStart)]
@@ -121,12 +157,16 @@ public class Shade: Impostor
                 .BindFloat(swapCooldown.SetDuration)
                 .Build())
             .SubOption(sub => sub.Name("Can't Report Bodies")//, Translations.Options.CantCallEmergencyMeetings)
+                .AddBoolean(false)
                 .BindBool(b => cantreport = b)
-                .AddOnOffValues(false)
                 .Build())
             .SubOption(sub => sub.Name("Can't Call Emergency Meetings")//, Translations.Options.CantCallEmergencyMeetings)
+                .AddBoolean(false)
                 .BindBool(b => cantCallMeetings = b)
-                .AddOnOffValues(false)
+                .Build())
+            .SubOption(sub => sub.Name("Shade Ability Counts as Harmful")//, Translations.Options.CantCallEmergencyMeetings)
+                .AddBoolean(false)
+                .BindBool(b => isHostile = b)
                 .Build());
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         roleModifier.RoleColor(Color.gray)

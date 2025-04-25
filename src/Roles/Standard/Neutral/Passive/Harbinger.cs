@@ -59,7 +59,7 @@ public class Harbinger : TaskRoleBase
     }
 
     [UIComponent(UI.Counter)]
-    private string TaskCheck() => RoleUtils.Counter(taskCount, tasksBeforeCircle, Color.yellow);
+    private string TaskCheck() => RoleUtils.Counter(taskCount, tasksBeforeCircle, new Color(0.92f, 0.77f, 0.22f));
 
     [UIComponent(UI.Counter)]
     private string RitualCheck() => RoleUtils.Counter(ritualCount, circleToWin, RoleColor);

@@ -56,7 +56,7 @@ public class Spy: MadCrewmate
     public void PutBloomOnPlayer()
     {
         if (bloomCooldown.NotReady()) return;
-        PlayerControl? closestPlayer = MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault();
+        PlayerControl closestPlayer = MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault();
         if (closestPlayer == null) return;
         if (blooming.Contains(closestPlayer.PlayerId)) return;
         bloomCooldown.Start();
@@ -123,7 +123,7 @@ public class Spy: MadCrewmate
     {
         INameModel nameModel = player.NameModel();
         RoleHolder roleHolder = nameModel.GCH<RoleHolder>();
-        PlayerControl? viewer = !revealedPlayers.ContainsKey(player.PlayerId) ? MyPlayer
+        PlayerControl viewer = !revealedPlayers.ContainsKey(player.PlayerId) ? MyPlayer
             : RoleUtils.GetPlayersWithinDistance(player, 900, true).FirstOrDefault(p => !revealedPlayers[player.PlayerId].Contains(p.PlayerId));
 
         if (viewer == MyPlayer) _rolesRevealed.Update(MyPlayer.UniquePlayerId(), i => i + 1);
@@ -176,7 +176,7 @@ public class Spy: MadCrewmate
     private void FinishBloom(byte playerId)
     {
         blooming.Remove(playerId);
-        PlayerControl? player = Players.FindPlayerById(playerId);
+        PlayerControl player = Players.FindPlayerById(playerId);
         if (player == null) return;
         RpcV3.Immediate(player.NetId, RpcCalls.SetScanner, SendOption.None).Write(false).Write(++MyPlayer.scannerCount).Send(MyPlayer.GetClientId());
         _bloomsGrown.Update(MyPlayer.UniquePlayerId(), i => i + 1);
