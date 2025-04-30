@@ -86,7 +86,7 @@ public class Harbinger : TaskRoleBase
     [RoleAction(LotusActionType.OnPet)]
     public void EnablePetKill(ActionHandle handle)
     {
-        PlayerControl? target = MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault();
+        PlayerControl target = MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault();
         if (target == null) return;
 
         handle.Cancel();
@@ -127,7 +127,7 @@ public class Harbinger : TaskRoleBase
         ritualCount++;
         taskCount = 0;
         if (!MyPlayer.IsAlive()) return;
-        if (ritualCount == circleToWin) AssignNewTarget();
+        if (ritualCount >= circleToWin) AssignNewTarget();
     }
 
     [RoleAction(LotusActionType.OnPetRelease)]
@@ -158,7 +158,9 @@ public class Harbinger : TaskRoleBase
     [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
     private void CheckPlayerDeaths(PlayerControl deadPlayer)
     {
+        if (deadPlayer == null) return;
         if (deadPlayer.PlayerId == MyPlayer.PlayerId) components.ForEach(c => c.Delete());
+        if (ritualCount < circleToWin||!MyPlayer.IsAlive()) return;
         if (trackedPlayer.PlayerId != deadPlayer.PlayerId) return;
         AssignNewTarget();
     }

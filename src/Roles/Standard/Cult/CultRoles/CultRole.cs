@@ -37,14 +37,14 @@ public class CultRole : Impostor
         IndicatorComponent indicatorComponent = new(new LiveString("☆", CultColor), Game.InGameStates, ViewMode.Additive, () => viewers);
 
         role.Faction = new Cultist.Initiated(role.Faction, nameModel.GetComponentHolder<IndicatorHolder>().Add(indicatorComponent));
-        role.SpecialType = SpecialType.Coven;
+        //role.SpecialType = SpecialType.Coven;
         Game.MatchData.GameHistory.AddEvent(new InitiateEvent(MyPlayer, target));
     }
 
     public void ConvertToCult(PlayerControl target)
     {
         CustomRole role = target.PrimaryRole();
-        if (role.SpecialType != SpecialType.Coven) return;
+        //if (role.SpecialType != SpecialType.Coven) return;
         if (role.Faction is not Cultist.Initiated initiated) return;
         List<PlayerControl> cult = Players.GetAlivePlayers().Where(IsConvertedCult).ToList();
 

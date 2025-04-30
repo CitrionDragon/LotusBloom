@@ -64,7 +64,7 @@ public class Initiator : CultRole
 
     [RoleAction(LotusActionType.Disconnect)]
     [RoleAction(LotusActionType.PlayerDeath)]
-    private int CountAlivePlayers() => backedAlivePlayers = Players.GetPlayers(PlayerFilter.Alive | PlayerFilter.Neutral).Count(p => p.PlayerId != MyPlayer.PlayerId && Relationship(p) is not Relation.FullAllies) + Players.GetPlayers(PlayerFilter.Alive | PlayerFilter.NeutralKilling).Count(p => p.PlayerId != MyPlayer.PlayerId && Relationship(p) is not Relation.FullAllies);
+    private int CountAlivePlayers() => backedAlivePlayers = Players.GetPlayers(PlayerFilter.Alive | PlayerFilter.Neutral).Count() + Players.GetPlayers(PlayerFilter.Alive | PlayerFilter.NeutralKilling).Count(p => p.PlayerId != MyPlayer.PlayerId);
 
     [RoleAction(LotusActionType.RoundStart)]
     protected override void PostSetup()

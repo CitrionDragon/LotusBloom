@@ -3,6 +3,7 @@ using Lotus.Factions.Crew;
 using Lotus.Factions.Impostors;
 using Lotus.Factions.Interfaces;
 using Lotus.Factions.Neutrals;
+using Lotus.Factions.Undead;
 using UnityEngine;
 
 namespace LotusBloom.Factions.Cult;
@@ -20,6 +21,7 @@ public abstract partial class Cultist : Faction<Cultist>
             ImpostorFaction => Relation.None,
             Crewmates => Relation.None,
             Neutral => Relation.None,
+            TheUndead => Relation.None,
             _ => other.Relationship(this)
         };
     }

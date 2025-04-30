@@ -5,6 +5,8 @@ using Lotus.Extensions;
 using Lotus.Factions;
 using Lotus.Factions.Impostors;
 using Lotus.GameModes.Standard;
+using Lotus.GUI;
+using Lotus.GUI.Name;
 using Lotus.Managers;
 using Lotus.Roles;
 using Lotus.Roles.Internals.Attributes;
@@ -15,6 +17,7 @@ using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Options.UI;
+using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 
@@ -22,32 +25,37 @@ namespace LotusBloom.Roles.Standard.Modifiers;
 
 public class Supporter : Subrole
 {
+    private bool debug1=false;
+    private bool debug2=false;
     public int CooldownReduction;
     public bool MadmateAddon;
     //[NewOnSetup] private List<byte> AffectedCd = null!;
     [NewOnSetup] private Dictionary<PlayerControl, Remote<GameOptionOverride>> AffectedCd;
+    [UIComponent(UI.Text, gameStates: GameState.Roaming)]
+    private string Indicator() => (debug1 ? Color.green.Colorize("◈") : Color.green.Colorize("◇")) + (debug2 ? Color.red.Colorize("◈") : Color.red.Colorize("◇"));
 
     [RoleAction(LotusActionType.FixedUpdate)]
     private void decreasecd()
     {
         if (Game.State is GameState.InMeeting) return;
         List<PlayerControl> nearbyallies = RoleUtils.GetPlayersWithinDistance(MyPlayer, 2f).Where(IsAllies).ToList();
-        AffectedCd.ForEach(pid =>
-        {
-            if (!nearbyallies.Contains(pid.Key))
-            {
-                pid.Value.Delete();
-                pid.Key.PrimaryRole().SyncOptions();
-                AffectedCd.Remove(pid.Key);
-            }
-        });
         nearbyallies.ForEach(p =>
         {
-            if (!AffectedCd.ContainsKey(p))
+            if (AffectedCd.ContainsKey(p)==false)
             {
                 MultiplicativeOverride multiplicativeOverride = new(Override.KillCooldown, (100f - CooldownReduction) / 100f);
                 AffectedCd.Add(p, Game.MatchData.Roles.AddOverride(p.PlayerId, multiplicativeOverride));
                 p.PrimaryRole().SyncOptions();
+            }
+        });
+        AffectedCd.ForEach(pid =>
+        {
+            
+            if (nearbyallies.Contains(pid.Key)==false)
+            {
+                pid.Value.Delete();
+                pid.Key.PrimaryRole().SyncOptions();
+                AffectedCd.Remove(pid.Key);
             }
         });
     
