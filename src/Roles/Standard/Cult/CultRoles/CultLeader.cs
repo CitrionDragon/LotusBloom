@@ -32,10 +32,12 @@ using Lotus.Factions.Neutrals;
 using Lotus.Factions.Impostors;
 using Lotus.Roles.Events;
 using LotusBloom.Factions.Cult;
+using Lotus.Roles.GUI.Interfaces;
+using Lotus.Roles.GUI;
 
 namespace LotusBloom.Roles.Standard.Cult.CultRoles;
 
-public class CultLeader : CultRole
+public class CultLeader : CultRole, IRoleUI
 {
     private bool limitedKillRange;
     private int alivePlayers;
@@ -57,7 +59,7 @@ public class CultLeader : CultRole
     }
 
     [UIComponent(UI.Cooldown)]
-    private Cooldown killCooldown;
+    private Cooldown killCooldown = null!;
 
     [RoleAction(LotusActionType.Interaction)]
     private void NecromancerImmunity(PlayerControl actor, Interaction interaction, ActionHandle handle)
@@ -115,6 +117,11 @@ public class CultLeader : CultRole
         else if (undeadWinners.Count == winners.Count && MyPlayer.IsAlive()) winDelegate.CancelGameWin();
         else undeadWinners.Where(tc => IsConvertedCult(tc) || MyPlayer.IsAlive() && IsUnconvertedCult(tc)).ForEach(uw => winners.Remove(uw));
     }
+
+    public RoleButton PetButton(IRoleButtonEditor petButton) => 
+        petButton.SetText("Command")
+            .BindCooldown(killCooldown)
+            .SetSprite(() => LotusAssets.LoadSprite("Buttons/Imp/mastermind_manipulate.png", 130, true));
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddKillCooldownOptions(base.RegisterOptions(optionStream)

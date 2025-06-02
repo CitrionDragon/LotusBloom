@@ -24,6 +24,7 @@ public class Socializer : Subrole
     private Cooldown socializetime = null!;
     private IRemote roleOverride;
     private int additionalVotes;
+    private bool benefits = false;
 
     [UIComponent(UI.Text, gameStates: GameState.Roaming)]
     private string socializetimeText() => RoleColor.Colorize("("+socializetime+"s)");
@@ -33,38 +34,28 @@ public class Socializer : Subrole
     {
         socializetime.SetDuration(starttime);
         socializetime.Start();
+        benefits = false;
         roleOverride?.Delete();
-        //roleOverride = AddOverride(new GameOptionOverride(Override.AnonymousVoting, true));
     }
 
     [RoleAction(LotusActionType.RoundEnd)]
     public void RoundEnd()
     {
         if (socializetime.NotReady()) return;
+        benefits = true;
         roleOverride = AddOverride(new GameOptionOverride(Override.AnonymousVoting, false));
     }
 
     [RoleAction(LotusActionType.Vote)]
     private void Vote(Optional<PlayerControl> voted, MeetingDelegate meetingDelegate)
     {
-        if (socializetime.NotReady()) return;
+        if (!benefits) return;
         for (int i = 0; i < additionalVotes; i++) meetingDelegate.CastVote(MyPlayer, voted);
     }
 
     [RoleAction(LotusActionType.FixedUpdate)]
     public void FixedUpdate()
     {
-        if (Game.State is GameState.InMeeting)
-        {
-            if (socializetime.IsReady()) return;
-            if (!paused)
-            {
-                socializetime.SetDuration(starttime);
-            }
-            socializetime.Start();
-            paused=true;
-            return;
-        }
         nearbyplayers = RoleUtils.GetPlayersWithinDistance(MyPlayer, 2f).Count();
         if (nearbyplayers < 2)
         {

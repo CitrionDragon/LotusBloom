@@ -40,7 +40,7 @@ public class Damocles : Subrole
     private bool paused;
     private float extratimekill;
     private float extratimemeeting;
-    [NewOnSetup] private HashSet<int> enteredVents;
+    [NewOnSetup] private HashSet<int> enteredVents = new();
 
     [UIComponent(UI.Counter)]
     private string CustomCooldown() => (!MyPlayer.IsAlive() || suicideTimer.IsReady()) ? "" : Color.red.Colorize(suicideTimer + "s");

@@ -26,10 +26,12 @@ using VentLib.Options.UI;
 using Lotus.Factions.Impostors;
 using VentLib.Utilities.Optionals;
 using Lotus.Factions;
+using Lotus.Roles.GUI.Interfaces;
+using Lotus.Roles.GUI;
 
 namespace LotusBloom.Roles.Standard.Impostors.Madmates;
 
-public class Spy: MadCrewmate
+public class Spy: MadCrewmate, IRoleUI
 {
     private static IAccumulativeStatistic<int> _bloomsGrown = Statistic<int>.CreateAccumulative($"Roles.{nameof(Spy)}.BloomsGrown", () => Translations.BloomsGrownStatistic);
     private static IAccumulativeStatistic<int> _rolesRevealed = Statistic<int>.CreateAccumulative($"Roles.{nameof(Spy)}.RolesRevealed", () => Translations.RolesRevealedStatistic);
@@ -48,9 +50,10 @@ public class Spy: MadCrewmate
     [NewOnSetup] private Dictionary<byte, int> bloomCounts = new();
     [NewOnSetup] private HashSet<byte> blooming = new();
     [NewOnSetup] private Dictionary<byte, List<byte>> revealedPlayers = new();
+    [NewOnSetup] private FixedUpdateLock fixedUpdateLock = new(ModConstants.RoleFixedUpdateCooldown);
 
     [UIComponent(UI.Cooldown)]
-    private Cooldown bloomCooldown;
+    private Cooldown bloomCooldown = null!;
 
     [RoleAction(LotusActionType.OnPet)]
     public void PutBloomOnPlayer()
@@ -213,6 +216,32 @@ public class Spy: MadCrewmate
             });
         }
     }
+
+    [RoleAction(LotusActionType.FixedUpdate)]
+    public void UpdateButton()
+    {
+        if (!fixedUpdateLock.AcquireLock()) return;
+        RoleButton petButton = UIManager.PetButton;
+        if (MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault() == null)
+        {
+            petButton.RevertSprite()
+            .SetText("Pet")
+            .BindCooldown(null);
+            petButton.GetButton().SetCoolDown(0,1);
+        }
+        else
+        {
+            petButton.SetText("Plant Bug")
+            .BindCooldown(bloomCooldown)
+            .SetSprite(() => LotusAssets.LoadSprite("Buttons/Crew/investigator_investigate.png", 130, true));
+        }
+    }
+
+    public RoleButton PetButton(IRoleButtonEditor petButton) => MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault() == null
+        ? petButton.Default(false).SetText("Pet")
+        : petButton.SetText("Plant Bug")
+            .BindCooldown(bloomCooldown)
+            .SetSprite(() => LotusAssets.LoadSprite("Buttons/Crew/investigator_investigate.png", 130, true));
 
     protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Impostors.Madmates.Spy.yaml";
 

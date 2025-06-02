@@ -20,10 +20,14 @@ using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using Lotus.Roles.RoleGroups.NeutralKilling;
 using Lotus.Roles;
+using VentLib.Localization.Attributes;
+using Lotus.Roles.GUI.Interfaces;
+using Lotus.Roles.GUI;
+using Lotus.GUI;
 
 namespace LotusBloom.Roles.Standard.Neutral.Killing;
 
-public class Hypnotist: NeutralKillingBase
+public class Hypnotist : NeutralKillingBase, IRoleUI
 {
     private int backedAlivePlayers;
     private int knownAlivePlayers;
@@ -103,10 +107,20 @@ public class Hypnotist: NeutralKillingBase
     [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
     private int CountAlivePlayers() => backedAlivePlayers = Players.GetPlayers(PlayerFilter.Alive | PlayerFilter.NonPhantom).Count(p => p.PlayerId != MyPlayer.PlayerId && Relationship(p) is not Relation.FullAllies);
 
+    public RoleButton KillButton(IRoleButtonEditor editor) => editor
+        .SetText(Translations.ButtonText)
+        .SetSprite(() => LotusAssets.LoadSprite("Buttons/Imp/puppeteer_operate.png", 130, true));
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(new Color(1f, 0.75f, 0.8f))
             .OptionOverride(new IndirectKillCooldown(KillCooldown));
 
     protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Neutrals.Killing.Hypnotist";
+    
+    [Localized(nameof(Hypnotist))]
+    public static class Translations
+    {
+        [Localized(nameof(ButtonText))] public static string ButtonText = "Hypnotize";
+    }
 }

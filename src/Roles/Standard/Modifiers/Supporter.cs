@@ -1,21 +1,28 @@
 using System.Collections.Generic;
 using System.Linq;
+using Lotus;
 using Lotus.API.Odyssey;
+using Lotus.API.Player;
 using Lotus.Extensions;
 using Lotus.Factions;
 using Lotus.Factions.Impostors;
 using Lotus.GameModes.Standard;
 using Lotus.GUI;
 using Lotus.GUI.Name;
+using Lotus.Logging;
 using Lotus.Managers;
 using Lotus.Roles;
+using Lotus.Roles.Events;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Overrides;
 using Lotus.Roles.Subroles;
 using Lotus.Utilities;
+using LotusBloom.Patches;
+using Rewired.Data.Mapping;
 using UnityEngine;
 using VentLib.Localization.Attributes;
+using VentLib.Logging;
 using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
@@ -25,50 +32,70 @@ namespace LotusBloom.Roles.Standard.Modifiers;
 
 public class Supporter : Subrole
 {
-    private bool debug1=false;
-    private bool debug2=false;
+    private static readonly StandardLogger _log = LoggerFactory.GetLogger<StandardLogger>(typeof(Supporter));
+    [NewOnSetup] private FixedUpdateLock fixedUpdateLock = new(ModConstants.RoleFixedUpdateCooldown);
     public int CooldownReduction;
     public bool MadmateAddon;
-    //[NewOnSetup] private List<byte> AffectedCd = null!;
-    [NewOnSetup] private Dictionary<PlayerControl, Remote<GameOptionOverride>> AffectedCd;
-    [UIComponent(UI.Text, gameStates: GameState.Roaming)]
-    private string Indicator() => (debug1 ? Color.green.Colorize("◈") : Color.green.Colorize("◇")) + (debug2 ? Color.red.Colorize("◈") : Color.red.Colorize("◇"));
+    [NewOnSetup] private List<int> AffectedAllies= new();
+    [NewOnSetup] private List<Remote<GameOptionOverride>> AffectedCds= new();
+
+    [UIComponent(UI.Counter)]
+    private string CultCounter() => RoleUtils.Counter(AffectedAllies.Count(), AffectedCds.Count());
 
     [RoleAction(LotusActionType.FixedUpdate)]
     private void decreasecd()
     {
-        if (Game.State is GameState.InMeeting) return;
+        if (Game.State is GameState.InMeeting || !fixedUpdateLock.AcquireLock()) return;
+        
+        List<PlayerControl> allies = Players.GetPlayers().Where(IsAllies).ToList();
         List<PlayerControl> nearbyallies = RoleUtils.GetPlayersWithinDistance(MyPlayer, 2f).Where(IsAllies).ToList();
-        nearbyallies.ForEach(p =>
+        MultiplicativeOverride defaultOverride = new(Override.KillCooldown, 1f);
+        allies.ForEach(ally =>
         {
-            if (AffectedCd.ContainsKey(p)==false)
+            int index = AffectedAllies.IndexOf(ally.PlayerId);
+            if (IsNear(ally))
             {
                 MultiplicativeOverride multiplicativeOverride = new(Override.KillCooldown, (100f - CooldownReduction) / 100f);
-                AffectedCd.Add(p, Game.MatchData.Roles.AddOverride(p.PlayerId, multiplicativeOverride));
-                p.PrimaryRole().SyncOptions();
+                if (index == -1)
+                {
+                    _log.Info($"Added Override To {ally.name}", ally.name);
+                    AffectedAllies.Add(ally.PlayerId);
+                    AffectedCds.Add(Game.MatchData.Roles.AddOverride(ally.PlayerId, multiplicativeOverride));
+                    ally.PrimaryRole().SyncOptions();
+                }
             }
-        });
-        AffectedCd.ForEach(pid =>
-        {
-            
-            if (nearbyallies.Contains(pid.Key)==false)
+            else
             {
-                pid.Value.Delete();
-                pid.Key.PrimaryRole().SyncOptions();
-                AffectedCd.Remove(pid.Key);
+                if (index != -1)
+                {
+                    _log.Info($"Removed Override Of {ally.name}", ally.name);
+                    AffectedCds[index].Delete();
+                    AffectedCds.RemoveAt(index);
+                    AffectedAllies.RemoveAt(index);
+                    ally.PrimaryRole().SyncOptions();
+                }
             }
         });
-    
     }
     private bool IsAllies(PlayerControl player)
     {
         if (MyPlayer.Relationship(player) is Relation.FullAllies) return true;
         return false;
     }
-
+    private bool IsNear(PlayerControl player)
+    {
+        bool isnear = false;
+        List<PlayerControl> nearbyallies = RoleUtils.GetPlayersWithinDistance(MyPlayer, 2f).Where(IsAllies).ToList();
+        nearbyallies.ForEach(ally =>
+        {
+            if (ally == player) isnear = true;
+        });
+        return isnear;
+    }
+    
     public override bool IsAssignableTo(PlayerControl player)
     {
-        if (player.PrimaryRole().Faction.GetType()==typeof(ImpostorFaction)||(MadmateAddon&player.PrimaryRole().Faction.GetType()==typeof(Madmates))) return base.IsAssignableTo(player);
+        if (player.PrimaryRole().Faction.GetType() == typeof(ImpostorFaction) || (MadmateAddon & player.PrimaryRole().Faction.GetType() == typeof(Madmates))) return base.IsAssignableTo(player);
         return false;
     }
 

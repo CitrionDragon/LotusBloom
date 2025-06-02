@@ -7,10 +7,12 @@ using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.RoleGroups.Vanilla;
 using VentLib.Options.UI;
 using Lotus.Extensions;
+using Lotus.Roles.GUI.Interfaces;
+using Lotus.Roles.GUI;
 
 namespace LotusBloom.Roles.Standard.Impostors;
 
-public class QuickShooter: Impostor
+public class QuickShooter: Impostor, IRoleUI
 {
     private int maxBullets;
     private int bulletCount;
@@ -50,6 +52,11 @@ public class QuickShooter: Impostor
         reloadCooldown.Start(AUSettings.KillCooldown());
         if (bulletCount >= keptBullets) bulletCount = keptBullets;
     }
+
+    public RoleButton PetButton(IRoleButtonEditor petButton) => 
+        petButton.SetText("Reload")
+            .BindCooldown(reloadCooldown)
+            .SetSprite(() => LotusAssets.LoadSprite("Buttons/Crew/sheriff_kill.png", 130, true));
 
     protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Impostors.QuickShooter.yaml";
 

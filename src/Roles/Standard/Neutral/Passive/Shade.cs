@@ -37,17 +37,21 @@ using Il2CppSystem.Runtime.Remoting.Messaging;
 using Lotus.Roles.Subroles;
 using VentLib.Logging;
 using Il2CppSystem.Dynamic.Utils;
+using Lotus.Factions.Interfaces;
+using Lotus.Roles.GUI;
+using Lotus.Roles.GUI.Interfaces;
 
 namespace LotusBloom.Roles.Standard.Neutral.Passive;
 
-public class Shade: Impostor
+public class Shade: Impostor, IRoleUI
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Shade));
     private Cooldown swapCooldown= null!;
     private bool cantCallMeetings;
     private bool cantreport;
     private bool isHostile;
-    private IRemote cooldownOverride;
+    private bool passFaction;
+    private IRemote cooldownOverride = null!;
     [NewOnSetup] private List<CustomRole> targetSubroles = null!;
     [NewOnSetup] private List<CustomRole> mySubroles = null!;
 
@@ -84,6 +88,7 @@ public class Shade: Impostor
         targetSubroles.Clear();
         target.GetSubroles().ForEach(sub => targetSubroles.Add(sub));
         CustomRole myRole = MyPlayer.PrimaryRole();
+        IFaction myFaction = myRole.Faction;
         mySubroles.Clear();
         MyPlayer.GetSubroles().ForEach(sub => mySubroles.Add(sub));
         //StandardRoles roleHolder = StandardGameMode.Instance.RoleManager.RoleHolder;
@@ -100,6 +105,9 @@ public class Shade: Impostor
         role.Assign();
         MyPlayer.NameModel().GetComponentHolder<SubroleHolder>().Components().ForEach(c => c.RemoveViewer(MyPlayer.PlayerId));
         targetSubroles.ForEach(sub => Game.AssignSubRole(MyPlayer, sub));
+        if (myFaction == FactionInstances.Neutral) return false;
+        if (passFaction) target.PrimaryRole().Faction = myFaction;
+        else MyPlayer.PrimaryRole().Faction = myFaction;
         return false;
     }
 
@@ -119,6 +127,7 @@ public class Shade: Impostor
         targetSubroles.Clear();
         target.GetSubroles().ForEach(sub => targetSubroles.Add(sub));
         CustomRole myRole = MyPlayer.PrimaryRole();
+        IFaction myFaction = myRole.Faction;
         mySubroles.Clear();
         MyPlayer.GetSubroles().ForEach(sub => mySubroles.Add(sub));
         //StandardRoles roleHolder = StandardGameMode.Instance.RoleManager.RoleHolder;
@@ -135,6 +144,9 @@ public class Shade: Impostor
         role.Assign();
         MyPlayer.NameModel().GetComponentHolder<SubroleHolder>().Components().ForEach(c => c.RemoveViewer(MyPlayer.PlayerId));
         targetSubroles.ForEach(sub => Game.AssignSubRole(MyPlayer, sub));
+        if (myFaction == FactionInstances.Neutral) return;
+        if (passFaction) target.PrimaryRole().Faction = myFaction;
+        else MyPlayer.PrimaryRole().Faction = myFaction;
     }
 
     [RoleAction(LotusActionType.RoundStart)]
@@ -146,6 +158,10 @@ public class Shade: Impostor
         if (deadBody.Exists() && cantreport) handle.Cancel();
         if (!deadBody.Exists() && cantCallMeetings) handle.Cancel();
     }
+
+    public RoleButton KillButton(IRoleButtonEditor killButton) => killButton
+        .SetText("Swap")
+        .SetSprite(() => LotusAssets.LoadSprite("Buttons/Crew/transporter_transport.png", 130, true));
 
     protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Neutrals.Passive.Shade.yaml";
 
@@ -163,6 +179,10 @@ public class Shade: Impostor
             .SubOption(sub => sub.Name("Can't Call Emergency Meetings")//, Translations.Options.CantCallEmergencyMeetings)
                 .AddBoolean(false)
                 .BindBool(b => cantCallMeetings = b)
+                .Build())
+            .SubOption(sub => sub.Name("Shade Passes Converted Faction")//, Translations.Options.CantCallEmergencyMeetings)
+                .AddBoolean(false)
+                .BindBool(b => passFaction = b)
                 .Build())
             .SubOption(sub => sub.Name("Shade Ability Counts as Harmful")//, Translations.Options.CantCallEmergencyMeetings)
                 .AddBoolean(false)

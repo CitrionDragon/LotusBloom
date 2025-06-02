@@ -33,12 +33,15 @@ using Lotus.Managers.History.Events;
 using VentLib.Utilities.Collections;
 using Lotus.API.Player;
 using Lotus.Roles.Interfaces;
+using Lotus.Roles.GUI.Interfaces;
+using Lotus.Roles.GUI;
+using Lotus.Roles.Subroles;
 //using static Lotus.Roles.RoleGroups.Impostors.Mafioso.MafiaTranslations;
 //using static Lotus.Roles.RoleGroups.Impostors.Mafioso.MafiaTranslations.MafiaOptionTranslations;
 
 namespace LotusBloom.Roles.Standard.Neutral.Killing;
 
-public class Scrapper: Engineer, ISabotagerRole
+public class Scrapper: Engineer, ISabotagerRole, IRoleUI
 {
 
     internal static Color ScrapColor = new(0.6f, 0.6f, 0.6f);
@@ -60,11 +63,9 @@ public class Scrapper: Engineer, ISabotagerRole
     private int spikedCost;
     private int laserCost;
     private int adrenalineCost;
-    private int craftCount;
-    private int maxCrafts;
-    private bool isCrafting = true;
 
     [NewOnSetup] private HashSet<byte> killedPlayers = null!;
+    [NewOnSetup] private FixedUpdateLock fixedUpdateLock = new(ModConstants.RoleFixedUpdateCooldown);
     private bool spiked;
     private bool hasKnife;
     private bool hasShield;
@@ -83,11 +84,6 @@ public class Scrapper: Engineer, ISabotagerRole
     private Vector2 startingLocation;
     private bool aiming;
 
-    public static string ShopMessage =
-        "You can craft items during meetings. Only items you have enough scrap for will show. To craft an item, first vote yourself until that item is selected. Then skip to continue.\nVoting for ANY OTHER player will count as your vote for that player, otherwise you will still remain in shop mode.";
-    public static string SelectedItemMessage = "You have selected to craft {0}. Crafting this will leave you with {1} scrap. Press the skip vote button to continue your crafting.";
-    public static string PurchaseItemMessage = "You have crafted: {0}. You now have {1} scrap leftover.";
-
     private byte selectedShopItem = byte.MaxValue;
     private bool hasVoted;
 
@@ -99,7 +95,7 @@ public class Scrapper: Engineer, ISabotagerRole
 
     public override bool TasksApplyToTotal() => false;
 
-    [UIComponent(UI.Counter, ViewMode.Absolute, GameState.InMeeting)]
+    [UIComponent(UI.Counter, ViewMode.Absolute)]
     private string DisableTaskCounter() => "";
 /*
     [UIComponent(UI.Counter, gameStates: GameState.Roaming)]
@@ -115,6 +111,13 @@ public class Scrapper: Engineer, ISabotagerRole
         if (!hasRadio) return _colorizedScrap.Formatted(scrapAmount)+ (knifeCooldown.IsReady() ? "" : Color.red.Colorize(" (" + knifeCooldown + "s)"));
         return (radioCooldown.IsReady()&&!sabotageOn ? Color.yellow.Colorize("◈") : Color.yellow.Colorize("◇")) + _colorizedScrap.Formatted(scrapAmount) + (knifeCooldown.IsReady() ? "" : Color.red.Colorize(" (" + knifeCooldown + "s)"));
     }
+
+    [UIComponent(UI.Text, gameStates: GameState.Roaming)]
+    private string LaserIndicator()
+    {
+        if (!hasLaser) return "";
+        return aiming ? Color.red.Colorize("Aiming") : Color.red.Colorize("Laser Ready");
+    }
     
     [UIComponent(UI.Name, ViewMode.Absolute, GameState.InMeeting)]
     private string CustomNameIndicator()
@@ -125,13 +128,18 @@ public class Scrapper: Engineer, ISabotagerRole
 
     protected override void PostSetup()
     {
+        LastResort.IncompatibleRoles.Add(typeof(Scrapper));
         VentCooldown = 0f;
         VentDuration = 120f;
         radioCooldown.SetDuration(30);
         _colorizedScrap = TranslationUtil.Colorize("Scrap::0: {0}", ScrapColor);
         shopItems = new ShopItem[]
         {
-            new("End Crafting", Color.gray, 0, true, () => craftCount = maxCrafts),
+            new("End Crafting", Color.gray, 0, true, () => 
+            {
+                hasVoted = true;
+                GetChatHandler().Message(ScrapperTranslations.CanVoteOtherPlayersOnItem).Send(MyPlayer);
+            }),
             new("Scrap Knife", _knifeColor, modifyShopCosts ? knifeCost : 5, true, () =>
             {
                 hasKnife = true;
@@ -165,8 +173,6 @@ public class Scrapper: Engineer, ISabotagerRole
     [RoleAction(LotusActionType.RoundStart)]
     private void RoundStart()
     {
-        craftCount = 0;
-        isCrafting = true;
         hasVoted = false;
         if (hasKnife) knifeCooldown.Start();
         selectedShopItem = byte.MaxValue;
@@ -190,7 +196,7 @@ public class Scrapper: Engineer, ISabotagerRole
     }
 
     [RoleAction(LotusActionType.RoundEnd)]
-    private void RoundEndMessage() => GetChatHandler().Message(ShopMessage).Send();
+    private void RoundEndMessage() => GetChatHandler().Message(ScrapperTranslations.ShopMessage).Send();
 
     [RoleAction(LotusActionType.RoundEnd)]
     private void UpdateShop()
@@ -318,14 +324,15 @@ public class Scrapper: Engineer, ISabotagerRole
     [RoleAction(LotusActionType.Vote)]
     private void HandleVoting(Optional<PlayerControl> player, MeetingDelegate meetingDelegate, ActionHandle handle)
     {
+        if (scrapAmount <= 0 || hasVoted) return;
         player.Handle(p =>
         {
             if (p.PlayerId == MyPlayer.PlayerId) HandleSelfVote(handle);
-            else if (!hasVoted)
+            else
             {
+                handle.Cancel();
                 hasVoted=true;
-                //handle.Cancel();
-                //meetingDelegate.CastVote(MyPlayer, player);
+                GetChatHandler().Message(ScrapperTranslations.CanVoteOtherPlayers).Send(MyPlayer);
             }
         }, () => HandleSkip(handle));
     }
@@ -340,12 +347,18 @@ public class Scrapper: Engineer, ISabotagerRole
         else selectedShopItem++;
         if (selectedShopItem >= currentShopItems.Length) selectedShopItem = 0;
         ShopItem item = currentShopItems[selectedShopItem];
-        GetChatHandler().Message(SelectedItemMessage.Formatted(item.Name, scrapAmount - item.Cost)).Send();
+        GetChatHandler().Message(ScrapperTranslations.SelectedItemMessage.Formatted(item.Name, scrapAmount - item.Cost)).Send();
     }
 
     private void HandleSkip(ActionHandle handle)
     {
-        if (selectedShopItem == byte.MaxValue) return;
+        if (selectedShopItem == byte.MaxValue)
+        {
+            handle.Cancel();
+            hasVoted = true;
+            GetChatHandler().Message(ScrapperTranslations.CanVoteOtherPlayersOnSkip).Send(MyPlayer);
+            return;
+        }
         if (selectedShopItem >= currentShopItems.Length)
         {
             handle.Cancel();
@@ -353,13 +366,10 @@ public class Scrapper: Engineer, ISabotagerRole
         }
         ShopItem item = currentShopItems[selectedShopItem];
         scrapAmount -= item.Cost;
-        craftCount++;
-        if (item.Color != _knifeColor && scrapAmount > 0 && hasVoted) handle.Cancel();
-        GetChatHandler().Message(PurchaseItemMessage.Formatted(item.Name, scrapAmount)).Send();
+        handle.Cancel();
+        GetChatHandler().Message(ScrapperTranslations.PurchaseItemMessage.Formatted(item.Name, scrapAmount)).Send();
         item.Action();
         currentShopItems = shopItems.Where(si => si.Enabled && si.Cost <= scrapAmount).ToArray();
-        if (isCrafting) handle.Cancel();
-        if (craftCount >= maxCrafts) isCrafting = false;
     }
 
     [RoleAction(LotusActionType.Interaction)]
@@ -400,9 +410,58 @@ public class Scrapper: Engineer, ISabotagerRole
         if (HasAllTasksComplete && refreshTasks) AssignAdditionalTasks();
     }
 
+    [RoleAction(LotusActionType.FixedUpdate)]
+    public void UpdateButton()
+    {
+        if (!fixedUpdateLock.AcquireLock()) return;
+        RoleButton petButton = UIManager.PetButton;
+        if (MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault() == null || !hasKnife)
+        {
+            if (hasLaser)
+            {
+                if (!aiming) petButton.SetText("Aim Laser");
+                else petButton.SetText("Fire");
+                petButton.SetSprite(() => LotusAssets.LoadSprite("Buttons/Imp/sniper_aim.png", 130, true));
+            }
+            else petButton.RevertSprite().SetText("Pet");
+            petButton.BindCooldown(null);
+            petButton.GetButton().SetCoolDown(0, 1);
+            //petButton.SetMaterial(Material.);
+        }
+        else
+        {
+            petButton.SetText("Kill")
+            .BindCooldown(knifeCooldown)
+            .SetSprite(() => AmongUsButtonSpriteReferences.KillButtonSprite);
+        }
+        RoleButton ventButton = UIManager.AbilityButton;
+        if (radioCooldown.IsReady() && !sabotageOn && hasRadio)
+        {
+            ventButton.SetText("Sabotage")
+            .SetSprite(() => HudManager.Instance.SabotageButton.graphic.sprite);
+        }
+        else
+        {
+            ventButton.RevertSprite().SetText("Vent");
+        }
+        ventButton.GetButton().SetCoolDown(0, 1);
+    }
+
     private ChatHandler GetChatHandler() => ChatHandler.Of(title: RoleColor.Colorize(RoleName)).Player(MyPlayer).LeftAlign();
 
     public bool CanSabotage() => true;
+
+    public RoleButton PetButton(IRoleButtonEditor abilityButton) => hasKnife && MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault() == null
+        ? abilityButton.SetText("Kill")
+            .BindCooldown(knifeCooldown)
+            .SetSprite(() => AmongUsButtonSpriteReferences.KillButtonSprite)
+        : abilityButton.Default(false).SetText("Pet");
+
+    public RoleButton AbilityButton(IRoleButtonEditor abilityButton) => hasRadio
+        ? abilityButton.SetText("Sabotage")
+            .SetSprite(() => HudManager.Instance.SabotageButton.graphic.sprite)
+        : abilityButton.SetText("Vent")
+            .SetSprite(() => AmongUsButtonSpriteReferences.VentButtonSprite);
 
     protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Neutrals.Killing.Scrapper";
 
@@ -436,10 +495,6 @@ public class Scrapper: Engineer, ISabotagerRole
                     .AddIntRange(0, 20, 1, 10)
                     .BindInt(i => adrenalineCost = i)
                     .Build())
-                .Build())
-            .SubOption(sub => sub.Name("Crafts per Meeting")//, ScrapFromReporting)
-                .AddIntRange(1, 5, 1, 1)
-                .BindInt(i => maxCrafts = i)
                 .Build())
             .SubOption(sub => sub.Name("Starts Game WIth Knife")//, StartsGameWithKnife)
                 .AddBoolean(false)
@@ -517,13 +572,21 @@ public class Scrapper: Engineer, ISabotagerRole
 
         [Localized(nameof(ShopMessage))]
         public static string ShopMessage =
-            "You are a member of the Mafia! You can purchase items during meetings. To purchase an item, first vote yourself until that item is selected. Then skip to continue.\nVoting for ANY OTHER player will count as your vote for that player, otherwise you will still remain in shop mode.";
+            "You can craft items during meetings. Only items you have enough scrap for will show. To craft an item, first vote yourself until that item is selected. Then skip to continue.\nVoting for ANY OTHER player will cancel crafting, otherwise you will still remain in craft mode.";
 
         [Localized(nameof(SelectedItemMessage))]
-        public static string SelectedItemMessage = "You have selected to purchase {0}. Purchasing this will leave you with {1} scrap. Press the skip vote button to continue your purchase.";
+        public static string SelectedItemMessage = "You have selected to craft {0}. Crafting this will leave you with {1} scrap. Press the skip vote button to continue your crafting.";
 
         [Localized(nameof(PurchaseItemMessage))]
-        public static string PurchaseItemMessage = "You have purchased: {0}. You now have {1} scrap leftover.";
+        public static string PurchaseItemMessage = "You have crafted: {0}. You now have {1} scrap leftover.";
+
+        [Localized(nameof(CanVoteOtherPlayers))]
+        public static string CanVoteOtherPlayers = "You can now vote regularly as you voted someone other than you and didn't skip.";
+
+        [Localized(nameof(CanVoteOtherPlayersOnSkip))]
+        public static string CanVoteOtherPlayersOnSkip = "You can now vote regularly as you skipped before selecting something to craft.";
+        [Localized(nameof(CanVoteOtherPlayersOnItem))]
+        public static string CanVoteOtherPlayersOnItem = "You can now vote regularly as you selected to end crafting.";
 
         [Localized(ModConstants.Options)]
         internal static class MafiaOptionTranslations

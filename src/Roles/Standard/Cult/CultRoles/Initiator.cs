@@ -41,7 +41,7 @@ public class Initiator : CultRole
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Initiator));
 
     [UIComponent(UI.Cooldown)]
-    private Cooldown convertCooldown;
+    private Cooldown convertCooldown = null!;
 
     private int backedAlivePlayers;
     private int knownAlivePlayers;

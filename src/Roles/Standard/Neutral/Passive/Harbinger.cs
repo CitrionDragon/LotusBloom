@@ -43,7 +43,7 @@ public class Harbinger : TaskRoleBase
     private const int MaxRitual = 30;
     private const float MaxRitualF = MaxRitual;
 
-    private Remote<NameComponent>? circleProgress;
+    private Remote<NameComponent> circleProgress;
     private int progress;
 
     private int taskCount;
@@ -108,7 +108,7 @@ public class Harbinger : TaskRoleBase
             taskCount = tasksBeforeCircle;
         }
 
-        PlayerControl? farPlayer = RoleUtils.GetPlayersWithinDistance(MyPlayer, 200, true).LastOrDefault();
+        PlayerControl farPlayer = RoleUtils.GetPlayersWithinDistance(MyPlayer, 200, true).LastOrDefault();
         if (farPlayer == null) return;
         targetLocation = farPlayer.GetTruePosition();
     }
