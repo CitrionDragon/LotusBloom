@@ -146,10 +146,11 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
                 shopItems[1].Enabled = false;
             }),
             new("Spiked Shield", _spikedColor, modifyShopCosts ? spikedCost : 3, false, () => spiked = true),
-            new("Scrap Shield", _shieldColor, modifyShopCosts ? shieldCost : 3, true, () => 
+            new("Scrap Shield", _shieldColor, modifyShopCosts ? shieldCost : 3, true, () =>
             {
                 hasShield = true;
                 shopItems[2].Enabled = true;
+                shopItems[3].Enabled = false;
             }),
             new("Radio", _radioColor, modifyShopCosts ? radioCost : 5, true, () => hasRadio = true),
             new("Scrap Laser", _radioColor, modifyShopCosts ? laserCost : 9, true, () => 
@@ -370,6 +371,7 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
         GetChatHandler().Message(ScrapperTranslations.PurchaseItemMessage.Formatted(item.Name, scrapAmount)).Send();
         item.Action();
         currentShopItems = shopItems.Where(si => si.Enabled && si.Cost <= scrapAmount).ToArray();
+        GetChatHandler().Message(ScrapperTranslations.CurrentShopMessage.Formatted(CustomNameIndicator())).Send();
     }
 
     [RoleAction(LotusActionType.Interaction)]
@@ -421,28 +423,32 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
             {
                 if (!aiming) petButton.SetText("Aim Laser");
                 else petButton.SetText("Fire");
-                petButton.SetSprite(() => LotusAssets.LoadSprite("Buttons/Imp/sniper_aim.png", 130, true));
+                petButton.SetSprite(() => LotusAssets.LoadSprite("Buttons/Imp/sniper_aim.png", 130, true))
+                .SetMaterial(HudManager.Instance.SabotageButton.buttonLabelText.fontMaterial);
             }
-            else petButton.RevertSprite().SetText("Pet");
+            else petButton.RevertSprite().SetText("Pet").SetMaterial(HudManager.Instance.AbilityButton.buttonLabelText.fontMaterial);
             petButton.BindCooldown(null);
             petButton.GetButton().SetCoolDown(0, 1);
-            //petButton.SetMaterial(Material.);
         }
         else
         {
             petButton.SetText("Kill")
             .BindCooldown(knifeCooldown)
             .SetSprite(() => AmongUsButtonSpriteReferences.KillButtonSprite);
+            petButton.SetMaterial(HudManager.Instance.SabotageButton.buttonLabelText.fontMaterial);
         }
         RoleButton ventButton = UIManager.AbilityButton;
         if (radioCooldown.IsReady() && !sabotageOn && hasRadio)
         {
             ventButton.SetText("Sabotage")
-            .SetSprite(() => HudManager.Instance.SabotageButton.graphic.sprite);
+            .SetSprite(() => HudManager.Instance.SabotageButton.graphic.sprite)
+            .SetMaterial(HudManager.Instance.SabotageButton.buttonLabelText.fontMaterial);
         }
         else
         {
-            ventButton.RevertSprite().SetText("Vent");
+            ventButton.SetText("Vent")
+            .SetSprite(() => AmongUsButtonSpriteReferences.VentButtonSprite)
+            .SetMaterial(HudManager.Instance.AbilityButton.buttonLabelText.fontMaterial);
         }
         ventButton.GetButton().SetCoolDown(0, 1);
     }
@@ -573,6 +579,9 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
         [Localized(nameof(ShopMessage))]
         public static string ShopMessage =
             "You can craft items during meetings. Only items you have enough scrap for will show. To craft an item, first vote yourself until that item is selected. Then skip to continue.\nVoting for ANY OTHER player will cancel crafting, otherwise you will still remain in craft mode.";
+
+        [Localized(nameof(CurrentShopMessage))]
+        public static string CurrentShopMessage = "You can now craft:/n{0}";
 
         [Localized(nameof(SelectedItemMessage))]
         public static string SelectedItemMessage = "You have selected to craft {0}. Crafting this will leave you with {1} scrap. Press the skip vote button to continue your crafting.";

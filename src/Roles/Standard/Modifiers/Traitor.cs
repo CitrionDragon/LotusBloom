@@ -71,7 +71,7 @@ public class Traitor : Subrole
         Game.AssignRole(MyPlayer, roleHolder2.Static.Impostor);
         CustomRole role2 = MyPlayer.PrimaryRole();
         role2.Assign();
-        MyPlayer.GetSubroles().Add(role);
+        Game.AssignSubRole(MyPlayer, role);
         if (role.RealRole.IsCrewmate())
         {
             role.DesyncRole = RoleTypes.Impostor;
