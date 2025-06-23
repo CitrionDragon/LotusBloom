@@ -55,7 +55,7 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
     private bool adrenaline;
     private bool laser;
     private bool refreshTasks;
-
+    private int scrapFromTasks;
     private int scrapFromBodies;
     private int knifeCost;
     private int shieldCost;
@@ -408,7 +408,7 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
 
     protected override void OnTaskComplete(Optional<NormalPlayerTask> playerTask)
     {
-        scrapAmount += playerTask.Map(pt => pt.Length is NormalPlayerTask.TaskLength.Long ? 2 : 1).OrElse(1);
+        scrapAmount += playerTask.Map(pt => pt.Length is NormalPlayerTask.TaskLength.Long ? scrapFromTasks*2 : scrapFromTasks).OrElse(scrapFromTasks);
         if (HasAllTasksComplete && refreshTasks) AssignAdditionalTasks();
     }
 
@@ -507,7 +507,7 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
                 .BindBool(b => hasKnife = b)
                 .Build())
             .SubOption(sub => sub.Name("Knife Cooldown")//, KnifeCooldown)
-                .Value(v =>  v.Text(GeneralOptionTranslations.GlobalText).Color(new Color(1f, 0.61f, 0.33f)).Value(-1f).Build())
+                .Value(v => v.Text(GeneralOptionTranslations.GlobalText).Color(new Color(1f, 0.61f, 0.33f)).Value(-1f).Build())
                 .AddFloatRange(0, 120, 2.5f, 0, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(knifeCooldown.SetDuration)
                 .Build())
@@ -538,8 +538,12 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
                     .BindBool(b => adrenalineReset = b)
                     .Build())
                 .Build())
+            .SubOption(sub => sub.Name("Scrap from Doing Tasks")//, ScrapFromReporting)
+                .AddIntRange(1, 5, 1, 2)
+                .BindInt(i => scrapFromTasks = i)
+                .Build())
             .SubOption(sub => sub.Name("Scrap from Fixing Sabotages")//, ScrapFromReporting)
-                .AddIntRange(0, 10, 1, 2)
+                .AddIntRange(1, 10, 1, 2)
                 .BindInt(i => scrapFromBodies = i)
                 .Build())
             .SubOption(sub => sub.Name("Refresh Tasks When All Complete")//, RefreshTasks)
@@ -581,7 +585,7 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
             "You can craft items during meetings. Only items you have enough scrap for will show. To craft an item, first vote yourself until that item is selected. Then skip to continue.\nVoting for ANY OTHER player will cancel crafting, otherwise you will still remain in craft mode.";
 
         [Localized(nameof(CurrentShopMessage))]
-        public static string CurrentShopMessage = "You can now craft:/n{0}";
+        public static string CurrentShopMessage = "You can now craft:\n{0}";
 
         [Localized(nameof(SelectedItemMessage))]
         public static string SelectedItemMessage = "You have selected to craft {0}. Crafting this will leave you with {1} scrap. Press the skip vote button to continue your crafting.";
