@@ -9,6 +9,8 @@ using VentLib.Options.UI;
 using Lotus.Extensions;
 using Lotus.Roles.GUI.Interfaces;
 using Lotus.Roles.GUI;
+using LotusBloom.RPC;
+using VentLib.Networking.RPC.Attributes;
 
 namespace LotusBloom.Roles.Standard.Impostors;
 

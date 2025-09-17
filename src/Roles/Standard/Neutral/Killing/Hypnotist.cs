@@ -24,6 +24,9 @@ using VentLib.Localization.Attributes;
 using Lotus.Roles.GUI.Interfaces;
 using Lotus.Roles.GUI;
 using Lotus.GUI;
+using LotusBloom.RPC;
+using VentLib;
+using VentLib.Networking.RPC.Attributes;
 
 namespace LotusBloom.Roles.Standard.Neutral.Killing;
 
@@ -40,7 +43,7 @@ public class Hypnotist : NeutralKillingBase, IRoleUI
     public override bool TryKill(PlayerControl target)
     {
         knownAlivePlayers = CountAlivePlayers();
-        if (knownAlivePlayers <= 3) return base.TryKill(target);
+        if (knownAlivePlayers <= 2) return base.TryKill(target);
 
         if (MyPlayer.InteractWith(target, LotusInteraction.HostileInteraction.Create(this)) is InteractionResult.Halt) return false;
 
@@ -83,6 +86,19 @@ public class Hypnotist : NeutralKillingBase, IRoleUI
         }
 
         cursedPlayers.Where(p => p.Data.IsDead).ToArray().Do(RemovePuppet);
+        
+        if (!MyPlayer.IsModded()) return;
+        RoleButton killButton = UIManager.KillButton;
+        if (MyPlayer.AmOwner)
+        {
+            if (knownAlivePlayers <= 2) killButton.RevertSprite().SetText("Kill");
+            else
+            {
+                killButton.SetText(Translations.ButtonText)
+                    .SetSprite(() => LotusAssets.LoadSprite("Buttons/Imp/puppeteer_operate.png", 130, true));
+            }
+        }
+        else Vents.FindRPC((uint)BloomModCalls.UpdateHypnotist)?.Send([MyPlayer.OwnerId]);
     }
 
     [RoleAction(LotusActionType.Exiled)]
@@ -111,9 +127,25 @@ public class Hypnotist : NeutralKillingBase, IRoleUI
         .SetText(Translations.ButtonText)
         .SetSprite(() => LotusAssets.LoadSprite("Buttons/Imp/puppeteer_operate.png", 130, true));
 
+    [ModRPC((uint)BloomModCalls.UpdateHypnotist, RpcActors.Host, RpcActors.NonHosts)]
+    private static void UpdateHypnotist()
+    {
+        Hypnotist? hypnotist = PlayerControl.LocalPlayer.PrimaryRole<Hypnotist>();
+        if (hypnotist == null) return;
+        RoleButton killButton = hypnotist.UIManager.KillButton;
+        if (hypnotist.knownAlivePlayers <= 2) killButton.RevertSprite().SetText("Kill");
+        else
+        {
+            killButton.SetText(Translations.ButtonText)
+                .SetSprite(() => LotusAssets.LoadSprite("Buttons/Imp/puppeteer_operate.png", 130, true));
+        }
+        
+    }
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(new Color(1f, 0.75f, 0.8f))
+            .RoleAbilityFlags(RoleAbilityFlag.CannotSabotage | RoleAbilityFlag.CannotVent)
             .OptionOverride(new IndirectKillCooldown(KillCooldown));
 
     protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Neutrals.Killing.Hypnotist";

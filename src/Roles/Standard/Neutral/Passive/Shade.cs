@@ -110,7 +110,7 @@ public class Shade: Impostor, IRoleUI
         else MyPlayer.PrimaryRole().Faction = myFaction;
         return false;
     }
-
+/*
     [RoleAction(LotusActionType.OnPet)]
     public void SwapRoles()
     {
@@ -148,7 +148,7 @@ public class Shade: Impostor, IRoleUI
         if (passFaction) target.PrimaryRole().Faction = myFaction;
         else MyPlayer.PrimaryRole().Faction = myFaction;
     }
-
+*/
     [RoleAction(LotusActionType.RoundStart)]
     private void RoundStart() => swapCooldown.Start();
 

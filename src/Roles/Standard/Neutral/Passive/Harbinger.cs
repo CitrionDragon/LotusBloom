@@ -86,6 +86,7 @@ public class Harbinger : TaskRoleBase
     [RoleAction(LotusActionType.OnPet)]
     public void EnablePetKill(ActionHandle handle)
     {
+        if (trackedPlayer == null) return;
         PlayerControl target = MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault();
         if (target == null) return;
 
@@ -179,6 +180,7 @@ public class Harbinger : TaskRoleBase
         .RoleColor(new Color(0.57f, 0.36f, 0.57f))
         .Gradient(_harbingerGradient)
         .SpecialType(SpecialType.Neutral);
+    
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddTaskOverrideOptions(base.RegisterOptions(optionStream)

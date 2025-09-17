@@ -26,8 +26,11 @@ using Lotus.Roles.Internals.Trackers;
 using Lotus.Roles.RoleGroups.Impostors;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Utilities;
+using LotusBloom.RPC;
 using UnityEngine;
+using VentLib;
 using VentLib.Localization.Attributes;
+using VentLib.Networking.RPC.Attributes;
 using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
@@ -55,24 +58,34 @@ public class Framer: Shapeshifter, IRoleUI
     public void ResendMessages() => CHandler().Message(FramerTranslations.VotePlayerInfo).Send(MyPlayer);
 
     [RoleAction(LotusActionType.Attack)]
-    public override bool TryKill(PlayerControl target) => base.TryKill(target);
+    public override bool TryKill(PlayerControl player) => base.TryKill(player);
 
     [RoleAction(LotusActionType.Shapeshift)]
     public void Mark(PlayerControl player, ActionHandle handle)
     {
         target = player;
-        RoleButton petButton = UIManager.PetButton;
-        petButton.SetText(FramerTranslations.ButtonText)
-            .BindCooldown(swapCooldown)
-            .SetSprite(() => LotusAssets.LoadSprite("Buttons/Crew/transporter_transport.png", 130, true));
+        if (!MyPlayer.IsModded()) return;
+        if (MyPlayer.AmOwner)
+        {
+            RoleButton petButton = UIManager.PetButton;
+            petButton.SetText(FramerTranslations.ButtonText)
+                .BindCooldown(swapCooldown)
+                .SetSprite(() => LotusAssets.LoadSprite("Buttons/Crew/transporter_transport.png", 130, true));
+        }
+        else Vents.FindRPC((uint)BloomModCalls.UpdatePolice)?.Send([MyPlayer.OwnerId],true);
     }
 
     [RoleAction(LotusActionType.Unshapeshift)]
     public void UnMark(PlayerControl player, ActionHandle handle)
     {
         target = null;
-        RoleButton petButton = UIManager.PetButton;
-        petButton.RevertSprite().SetText("Pet");
+        if (!MyPlayer.IsModded()) return;
+        if (MyPlayer.AmOwner)
+        {
+            RoleButton petButton = UIManager.PetButton;
+            petButton.RevertSprite().SetText("Pet");
+        }
+        else Vents.FindRPC((uint)BloomModCalls.UpdatePolice)?.Send([MyPlayer.OwnerId],false);
     }
 
     [RoleAction(LotusActionType.OnPet)]
@@ -177,6 +190,21 @@ public class Framer: Shapeshifter, IRoleUI
             .BindCooldown(swapCooldown)
             .SetSprite(() => LotusAssets.LoadSprite("Buttons/Crew/transporter_transport.png", 130, true));
 
+    [ModRPC((uint)BloomModCalls.UpdateFramer, RpcActors.Host, RpcActors.NonHosts)]
+    private static void UpdateFramer(bool shifted)
+    {
+        Framer? framer = PlayerControl.LocalPlayer.PrimaryRole<Framer>();
+        if (framer == null) return;
+        RoleButton petButton = framer.UIManager.PetButton;
+        if (shifted)
+        {
+            petButton.SetText(FramerTranslations.ButtonText)
+                .BindCooldown(framer.swapCooldown)
+                .SetSprite(() => LotusAssets.LoadSprite("Buttons/Crew/transporter_transport.png", 130, true));
+        }
+        else petButton.RevertSprite().SetText("Pet");
+    }
+    
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddShapeshiftOptions(base.RegisterOptions(optionStream)
             .SubOption(sub => sub.Name("Shift Swap Cooldown")

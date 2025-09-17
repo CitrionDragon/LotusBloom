@@ -28,6 +28,9 @@ using VentLib.Utilities.Optionals;
 using Lotus.Factions;
 using Lotus.Roles.GUI.Interfaces;
 using Lotus.Roles.GUI;
+using LotusBloom.RPC;
+using VentLib;
+using VentLib.Networking.RPC.Attributes;
 
 namespace LotusBloom.Roles.Standard.Impostors.Madmates;
 
@@ -90,7 +93,7 @@ public class Spy: MadCrewmate, IRoleUI
                 CustomRole role = player.PrimaryRole();
                 if (role.SpecialType is not SpecialType.Neutral && role.SpecialType is not SpecialType.NeutralKilling)
                 {
-                    if (role.Faction.GetType() == typeof(ImpostorFaction)) color=Color.red;
+                    if (role.Faction.GetType() == typeof(ImpostorFaction) || role.Faction == FactionInstances.Madmates) color=Color.red;
                     else
                     {
                         color=Color.cyan;
@@ -152,7 +155,7 @@ public class Spy: MadCrewmate, IRoleUI
         CustomRole role = player.PrimaryRole();
         if (role.SpecialType is not SpecialType.Neutral && role.SpecialType is not SpecialType.NeutralKilling)
         {
-            if (role.Faction.GetType() == typeof(ImpostorFaction)) color=Color.red;
+            if (role.Faction.GetType() == typeof(ImpostorFaction) || role.Faction == FactionInstances.Madmates) color=Color.red;
             else
             {
                 color=Color.cyan;
@@ -221,19 +224,28 @@ public class Spy: MadCrewmate, IRoleUI
     public void UpdateButton()
     {
         if (!fixedUpdateLock.AcquireLock()) return;
+        if (!MyPlayer.IsModded()) return;
         RoleButton petButton = UIManager.PetButton;
         if (MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault() == null)
         {
-            petButton.RevertSprite()
-            .SetText("Pet")
-            .BindCooldown(null);
-            petButton.GetButton().SetCoolDown(0,1);
+            if (MyPlayer.AmOwner)
+            {
+                petButton.RevertSprite()
+                    .SetText("Pet")
+                    .BindCooldown(null);
+                petButton.GetButton().SetCoolDown(0, 1);
+            }
+            else Vents.FindRPC((uint)BloomModCalls.UpdateSpy)?.Send([MyPlayer.OwnerId],false);
         }
         else
         {
-            petButton.SetText("Plant Bug")
-            .BindCooldown(bloomCooldown)
-            .SetSprite(() => LotusAssets.LoadSprite("Buttons/Crew/investigator_investigate.png", 130, true));
+            if (MyPlayer.AmOwner)
+            {
+                petButton.SetText("Plant Bug")
+                    .BindCooldown(bloomCooldown)
+                    .SetSprite(() => LotusAssets.LoadSprite("Buttons/Crew/investigator_investigate.png", 130, true));
+            }
+            else Vents.FindRPC((uint)BloomModCalls.UpdateSpy)?.Send([MyPlayer.OwnerId],true);
         }
     }
 
@@ -243,6 +255,27 @@ public class Spy: MadCrewmate, IRoleUI
             .BindCooldown(bloomCooldown)
             .SetSprite(() => LotusAssets.LoadSprite("Buttons/Crew/investigator_investigate.png", 130, true));
 
+    [ModRPC((uint)BloomModCalls.UpdateSpy, RpcActors.Host, RpcActors.NonHosts)]
+    private static void UpdateSpy(bool closeplayer)
+    {
+        Spy? spy = PlayerControl.LocalPlayer.PrimaryRole<Spy>();
+        if (spy == null) return;
+        RoleButton petButton = spy.UIManager.PetButton;
+        if (closeplayer)
+        {
+            petButton.SetText("Plant Bug")
+                .BindCooldown(spy.bloomCooldown)
+                .SetSprite(() => LotusAssets.LoadSprite("Buttons/Crew/investigator_investigate.png", 130, true));
+        }
+        else
+        {
+            petButton.RevertSprite()
+                .SetText("Pet")
+                .BindCooldown(null);
+            petButton.GetButton().SetCoolDown(0,1);
+        }
+    }
+    
     protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Impostors.Madmates.Spy.yaml";
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>

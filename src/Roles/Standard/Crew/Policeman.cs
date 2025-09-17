@@ -41,6 +41,10 @@ using Lotus.Roles.Subroles;
 using LotusBloom.Roles.Standard.Neutral.Passive;
 using Lotus.Roles.GUI.Interfaces;
 using Lotus.Roles.GUI;
+using Lotus.RPC;
+using VentLib;
+using VentLib.Networking.RPC.Attributes;
+using LotusBloom.RPC;
 
 namespace LotusBloom.Roles.Standard.Crew;
 
@@ -84,6 +88,7 @@ public class Policeman : Crewmate, IRoleUI
     private int totalhandcuffs;
     private int handcuffs;
     private float handcuffSpeed;
+    private Remote<TextComponent>? cuffText;
     private bool dragging = false;
     private PlayerControl handcuffedplayer = null;
     [NewOnSetup] private Dictionary<byte, Escort.BlockDelegate> blockedPlayers;
@@ -191,6 +196,8 @@ public class Policeman : Crewmate, IRoleUI
             RoleButton killButton = UIManager.KillButton;
             KbAction++;
             if (KbAction >= 3) KbAction = 0;
+            if (!MyPlayer.IsModded()) return;
+            if (!MyPlayer.AmOwner) Vents.FindRPC((uint)BloomModCalls.UpdatePolice)?.Send([MyPlayer.OwnerId],false);
             if (KbAction == 0)
             {
                 killButton.SetText("Interrogate")
@@ -216,6 +223,7 @@ public class Policeman : Crewmate, IRoleUI
         if (handcuffs <= 0||handcuffCooldown.NotReady()) return;
         if (handcuffedplayer != null) RemoveHandcuff();
         handcuffedplayer = closestPlayer;
+        cuffText = SetCuffText(handcuffedplayer);
         optionOverride = handcuffedplayer.PrimaryRole().AddOverride(new GameOptionOverride(Override.PlayerSpeedMod, handcuffSpeed));
         handcuffedplayer.PrimaryRole().SyncOptions();
         blockedPlayers[handcuffedplayer.PlayerId] = Escort.BlockDelegate.Block(handcuffedplayer, MyPlayer, -1f);
@@ -224,13 +232,20 @@ public class Policeman : Crewmate, IRoleUI
         handcuffs--;
         handcuffCooldown.Start();
     }
+    
+    private Remote<TextComponent> SetCuffText(PlayerControl player)
+    {
+        LiveString indicator = new(new Color(0.6f, 0.6f, 0.6f).Colorize("Pet to break handcuffs"));
+        TextComponent text = new(indicator, GameState.Roaming, ViewMode.Additive, player);
+        return player.NameModel().GetComponentHolder<TextHolder>().Add(text);
+    }
 /*
     [RoleAction(LotusActionType.FixedUpdate)]
     private void drag()
     {
         if (handcuffedplayer.Data.IsDead) RemoveHandcuff();
-        if (!dragging) return;
-        Utils.Teleport(handcuffedplayer.NetTransform,MyPlayer.transform.position);
+        //if (!dragging) return;
+        //Utils.Teleport(handcuffedplayer.NetTransform,MyPlayer.transform.position);
     }
     */
     [RoleAction(LotusActionType.RoundEnd)]
@@ -241,6 +256,7 @@ public class Policeman : Crewmate, IRoleUI
     {
         if (handcuffedplayer == null) return;
         playerRemotes!.GetValueOrDefault(handcuffedplayer.PlayerId, null)?.Delete();
+        cuffText?.Delete();
         optionOverride.Delete();
         handcuffedplayer.PrimaryRole().SyncOptions();
         blockedPlayers.ToArray().ForEach(k =>
@@ -294,21 +310,30 @@ public class Policeman : Crewmate, IRoleUI
         if (!fixedUpdateLock.AcquireLock()) return;
         if (handcuffedplayer != null)
         {
-            if (handcuffedplayer.Data.IsDead) RemoveHandcuff();
+            if (handcuffedplayer.Data.IsDead||!MyPlayer.IsAlive()) RemoveHandcuff();
         }
+        if (!MyPlayer.IsModded()) return;
         RoleButton petButton = UIManager.PetButton;
         if (MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault() == null)
         {
-            petButton.SetText(RoleTranslations.Switch)
-            .BindCooldown(null)
-            .SetSprite(() => LotusAssets.LoadSprite("Buttons/generic_switch_ability.png", 130, true));
-            petButton.GetButton().SetCoolDown(0,1);
+            if (MyPlayer.AmOwner)
+            {
+                petButton.SetText(RoleTranslations.Switch)
+                    .BindCooldown(null)
+                    .SetSprite(() => LotusAssets.LoadSprite("Buttons/generic_switch_ability.png", 130, true));
+                petButton.GetButton().SetCoolDown(0, 1);
+            }
+            else Vents.FindRPC((uint)BloomModCalls.UpdatePolice)?.Send([MyPlayer.OwnerId],false);
         }
         else
         {
-            petButton.SetText("Handcuff")
-            .BindCooldown(handcuffCooldown)
-            .SetSprite(() => LotusAssets.LoadSprite("Buttons/Crew/escort_roleblock.png", 130, true));
+            if (MyPlayer.AmOwner)
+            {
+                petButton.SetText("Handcuff")
+                    .BindCooldown(handcuffCooldown)
+                    .SetSprite(() => LotusAssets.LoadSprite("Buttons/Crew/escort_roleblock.png", 130, true));
+            }
+            else Vents.FindRPC((uint)BloomModCalls.UpdatePolice)?.Send([MyPlayer.OwnerId],true);
         }
     }
 
@@ -323,6 +348,43 @@ public class Policeman : Crewmate, IRoleUI
         : abilityButton.SetText("Handcuff")
             .SetSprite(() => LotusAssets.LoadSprite("Buttons/Crew/escort_roleblock.png", 130, true));
 
+    [ModRPC((uint)BloomModCalls.UpdatePolice, RpcActors.Host, RpcActors.NonHosts)]
+    private static void RpcUpdatePolice(bool closeplayer)
+    {
+        Policeman? police = PlayerControl.LocalPlayer.PrimaryRole<Policeman>();
+        if (police == null) return;
+        RoleButton petButton = police.UIManager.PetButton;
+        if (closeplayer)
+        {
+            petButton.SetText("Handcuff")
+                .BindCooldown(police.handcuffCooldown)
+                .SetSprite(() => LotusAssets.LoadSprite("Buttons/Crew/escort_roleblock.png", 130, true));
+        }
+        else
+        {
+            petButton.SetText(RoleTranslations.Switch)
+                .BindCooldown(null)
+                .SetSprite(() => LotusAssets.LoadSprite("Buttons/generic_switch_ability.png", 130, true));
+            petButton.GetButton().SetCoolDown(0,1);
+        }
+        RoleButton killButton = police.UIManager.KillButton;
+        if (police.KbAction == 0)
+        {
+            killButton.SetText("Interrogate")
+                .SetSprite(() => LotusAssets.LoadSprite("Buttons/Crew/investigator_investigate.png", 130, true));
+        }
+        else if (police.KbAction == 1)
+        {
+            killButton.SetText("Kill")
+                .SetSprite(() => LotusAssets.LoadSprite("Buttons/Crew/sheriff_kill.png", 130, true));
+        }
+        else
+        {
+            killButton.SetText("Free")
+                .SetSprite(() => LotusAssets.LoadSprite("Buttons/Crew/escort_roleblock.png", 130, true));
+        }
+        return;
+    }
     protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Crew.Policeman.yaml";
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>

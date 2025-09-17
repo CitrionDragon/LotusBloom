@@ -10,6 +10,10 @@
         <RootNamespace>LotusBloom</RootNamespace>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <!-- Replace this with your Among Us Directory \/\/\/ -->
+        <AmongUsDirectory>C:\Users\Smili\OneDrive\Desktop\Project Lotus</AmongUsDirectory>
+    </PropertyGroup>
     
     <ItemGroup>
         <Reference Include="VentFrameworkContinued">
@@ -21,11 +25,6 @@
             <Private>False</Private>
         </Reference>
     </ItemGroup>
-    
-    <PropertyGroup>
-        <!-- Replace this with your Among Us Directory \/\/\/ -->
-        <AmongUsDirectory>C:\Users\Smili\OneDrive\Desktop\Project Lotus</AmongUsDirectory>
-    </PropertyGroup>
     
     <ItemGroup>
         

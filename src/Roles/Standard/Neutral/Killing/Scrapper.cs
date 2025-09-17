@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AmongUs.GameOptions;
+using Il2CppSystem.Text;
 using Lotus.API;
 using Lotus.API.Odyssey;
 using Lotus.API.Vanilla.Meetings;
@@ -30,12 +32,23 @@ using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using VentLib.Options.UI;
 using Lotus.Managers.History.Events;
+using Lotus.Managers;
 using VentLib.Utilities.Collections;
 using Lotus.API.Player;
+using Lotus.Factions.Interfaces;
+using Lotus.GUI.Name.Components;
 using Lotus.Roles.Interfaces;
 using Lotus.Roles.GUI.Interfaces;
 using Lotus.Roles.GUI;
+using Lotus.Roles.Internals.Trackers;
 using Lotus.Roles.Subroles;
+using Lotus.RPC.CustomObjects.Interfaces;
+using Lotus.Victory.Conditions;
+using LotusBloom.RPC;
+using VentLib;
+using VentLib.Networking.RPC.Attributes;
+using CollectionExtensions = HarmonyLib.CollectionExtensions;
+
 //using static Lotus.Roles.RoleGroups.Impostors.Mafioso.MafiaTranslations;
 //using static Lotus.Roles.RoleGroups.Impostors.Mafioso.MafiaTranslations.MafiaOptionTranslations;
 
@@ -84,6 +97,23 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
     private Vector2 startingLocation;
     private bool aiming;
 
+    public const string LeftArrow = "<----";
+    public const string RightArrow = "--->";
+    public const string NoRoleHere = "----------";
+    public const float ShiftTimer = 15f;
+    private bool currentlyGuessing;
+    private bool isShapeshifterRole;
+    private bool wasShiftingRole;
+    private bool meetingEnded=true;
+    private int currentPageNum;
+    [NewOnSetup(true)] private MeetingPlayerSelector voteSelector = new();
+    [NewOnSetup] private List<GuesserShapeshifterObject> shapeshifterObjects = [];
+    
+    private RoleTypes? originalRoleType;
+
+    private IFaction lastFaction;
+    private Cooldown shiftTimer;
+    
     private byte selectedShopItem = byte.MaxValue;
     private bool hasVoted;
 
@@ -95,16 +125,12 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
 
     public override bool TasksApplyToTotal() => false;
 
-    [UIComponent(UI.Counter, ViewMode.Absolute)]
+    [UIComponent(UI.Counter, ViewMode.Absolute, GameState.InMeeting)]
     private string DisableTaskCounter() => "";
-/*
-    [UIComponent(UI.Counter, gameStates: GameState.Roaming)]
-    private string SpikedCounter()
-    {
-        string counter = RoleUtils.Counter(spikedCount, color: _spikedColor);
-        return hasKnife ? counter : $"<s>{counter}</s>";
-    }
-*/
+    
+    [UIComponent(UI.Counter, ViewMode.Absolute, GameState.Roaming)]
+    private string DisableTaskCounter2() => "";
+
     [UIComponent(UI.Text, gameStates: GameState.Roaming)]
     private string ScrapIndicator()
     {
@@ -118,13 +144,6 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
         if (!hasLaser) return "";
         return aiming ? Color.red.Colorize("Aiming") : Color.red.Colorize("Laser Ready");
     }
-    
-    [UIComponent(UI.Name, ViewMode.Absolute, GameState.InMeeting)]
-    private string CustomNameIndicator()
-    {
-        currentShopItems = shopItems.Where(si => si.Enabled && si.Cost <= scrapAmount).ToArray();
-        return currentShopItems.Select(si => si.ToDisplay()).Fuse("\n");
-    }
 
     protected override void PostSetup()
     {
@@ -135,33 +154,45 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
         _colorizedScrap = TranslationUtil.Colorize("Scrap::0: {0}", ScrapColor);
         shopItems = new ShopItem[]
         {
-            new("End Crafting", Color.gray, 0, true, () => 
-            {
-                hasVoted = true;
-                GetChatHandler().Message(ScrapperTranslations.CanVoteOtherPlayersOnItem).Send(MyPlayer);
-            }),
             new("Scrap Knife", _knifeColor, modifyShopCosts ? knifeCost : 5, true, () =>
             {
                 hasKnife = true;
+                shopItems[0].Enabled = false;
+            }),
+            new("Spiked Shield", _spikedColor, modifyShopCosts ? spikedCost : 3, false, () =>
+            {
+                spiked = true;
                 shopItems[1].Enabled = false;
             }),
-            new("Spiked Shield", _spikedColor, modifyShopCosts ? spikedCost : 3, false, () => spiked = true),
             new("Scrap Shield", _shieldColor, modifyShopCosts ? shieldCost : 3, true, () =>
             {
                 hasShield = true;
-                shopItems[2].Enabled = true;
+                shopItems[1].Enabled = true;
+                shopItems[2].Enabled = false;
+            }),
+            new("Radio", _radioColor, modifyShopCosts ? radioCost : 5, true, () =>
+            {
+                hasRadio = true;
                 shopItems[3].Enabled = false;
             }),
-            new("Radio", _radioColor, modifyShopCosts ? radioCost : 5, true, () => hasRadio = true),
             new("Scrap Laser", _radioColor, modifyShopCosts ? laserCost : 9, true, () => 
             {
                 hasLaser = true;
                 ultimate = true;
+                shopItems[4].Enabled = false;
+                shopItems[5].Enabled = false;
             }),
             new("Adrenaline Shot", _radioColor, modifyShopCosts ? adrenalineCost : 9, true, () => 
             {
                 hasAdrenaline = true;
                 ultimate = true;
+                shopItems[4].Enabled = false;
+                shopItems[5].Enabled = false;
+            }),
+            new("End Crafting", Color.gray, 0, true, () => 
+            {
+                hasVoted = true;
+                GetChatHandler().Message(ScrapperTranslations.CanVoteOtherPlayersOnItem).Send(MyPlayer);
             })
         };
         if (knifeCooldown.Duration <= -1) knifeCooldown.Duration = AUSettings.KillCooldown();
@@ -177,16 +208,16 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
         hasVoted = false;
         if (hasKnife) knifeCooldown.Start();
         selectedShopItem = byte.MaxValue;
-        shopItems[1].Enabled = !hasKnife;
+        shopItems[0].Enabled = !hasKnife;
         if (!ultimate)
         {
-            shopItems[5].Enabled = laser;
-            shopItems[6].Enabled = adrenaline;
+            shopItems[4].Enabled = laser;
+            shopItems[5].Enabled = adrenaline;
         }
         else
         {
+            shopItems[4].Enabled = false;
             shopItems[5].Enabled = false;
-            shopItems[6].Enabled = false;
         }
         if (adrenalineReset)
         {
@@ -197,13 +228,13 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
     }
 
     [RoleAction(LotusActionType.RoundEnd)]
-    private void RoundEndMessage() => GetChatHandler().Message(ScrapperTranslations.ShopMessage).Send();
-
-    [RoleAction(LotusActionType.RoundEnd)]
     private void UpdateShop()
     {
-        shopItems[2].Enabled = hasShield;
-        shopItems[3].Enabled = !hasShield;
+        currentShopItems = shopItems.Where(si => si.Enabled && si.Cost <= scrapAmount).ToArray();
+        shopItems[1].Enabled = hasShield&!spiked;
+        shopItems[2].Enabled = !hasShield;
+        meetingEnded = false;
+        GetChatHandler().Message(ScrapperTranslations.ShopMessage).Send();
     }
 
     [RoleAction(LotusActionType.OnPet)]
@@ -247,7 +278,7 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
         // DevLogger.Log($"Target Position: {targetPosition}");
         int kills = 0;
 
-        foreach (PlayerControl target in Players.GetAllPlayers().Where(p => p.PlayerId != MyPlayer.PlayerId && p.Relationship(MyPlayer) is not Relation.FullAllies))
+        foreach (PlayerControl target in Players.GetAllPlayers().Where(p => p.PlayerId != MyPlayer.PlayerId && p.Relationship(MyPlayer) is not Relation.FullAllies && p.IsAlive()))
         {
             //DevLogger.Log(target.name);
             Vector3 targetPos = target.transform.position - (Vector3)MyPlayer.GetTruePosition();
@@ -321,57 +352,224 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
         sabotageOn = false;
         radioCooldown.Start();
     }
+    
+    [RoleAction(LotusActionType.Shapeshift, priority:Priority.VeryHigh)]
+    public void SelectRoleToGuess(PlayerControl target, ActionHandle handle)
+    {
+        if (MeetingHud.Instance) handle.Cancel(ActionHandle.CancelType.Soft);
+        if (!currentlyGuessing || !isShapeshifterRole) return;
+
+        var firstObject = shapeshifterObjects.FirstOrDefault(o => o.RealPlayer?.NetId == target.NetId || o.NetObject?.playerControl.NetId == target.NetId);
+        if (firstObject == null) return;
+        HandleShapeshifterChoice(firstObject);
+    }
+
+    [RoleAction(LotusActionType.Disconnect, ActionFlag.GlobalDetector)]
+    public void FillDisconnects(PlayerControl target)
+    {
+        if (target.PlayerId == MyPlayer.PlayerId)
+        {
+            CollectionExtensions.Do(shapeshifterObjects, gso => gso.Delete());
+            return;
+        }
+
+        var firstObject = shapeshifterObjects.FirstOrDefault(o => o.RealPlayer?.NetId == target.NetId || o.NetObject?.playerControl.NetId == target.NetId);
+        if (firstObject == null) return;
+        shiftTimer.Finish();
+    }
+
+    [RoleAction(LotusActionType.MeetingEnd, ActionFlag.WorksAfterDeath)]
+    public void CheckRevive()
+    {
+        shiftTimer.Finish(true);
+        meetingEnded = true;
+        if (wasShiftingRole)
+        {
+            wasShiftingRole = false;
+            isShapeshifterRole = false;
+            MyPlayer.PrimaryRole().DesyncRole = originalRoleType;
+            RoleTypes targetRole = MyPlayer.PrimaryRole().RealRole;
+            if (!MyPlayer.IsAlive()) targetRole = targetRole.GhostEquivalent();
+            MyPlayer.RpcSetRoleDesync(targetRole, MyPlayer);
+            originalRoleType = null;
+        }
+        DeleteAllShapeshifterObjects();
+    }
+
+    private void StartCrafting()
+    {
+        isShapeshifterRole = true;
+        currentPageNum = 1;
+        currentlyGuessing = true;
+        
+        if (!wasShiftingRole)
+        {
+            wasShiftingRole = true;
+            var mainRole = MyPlayer.PrimaryRole();
+            if (mainRole.DesyncRole.HasValue) originalRoleType = mainRole.DesyncRole.Value;
+            else originalRoleType = null;
+
+            mainRole.DesyncRole = RoleTypes.Shapeshifter;
+        }
+
+        ResetShapeshfiterObjects();
+        MyPlayer.RpcSetRoleDesync(RoleTypes.Shapeshifter, MyPlayer);
+        if (!shiftTimer.IsCoroutine)
+        {
+            shiftTimer.IsCoroutine = true;
+            //CooldownManager.SubmitCooldown(shiftTimer);
+        }
+        shiftTimer.StartThenRun(CancelGuessingTimerDelay, ShiftTimer);
+        SendCnoRows();
+    }
+    
+    private void CancelGuessingTimerDelay()
+    {
+        isShapeshifterRole = false;
+        voteSelector.Reset();
+        currentlyGuessing = false;
+        selectedShopItem = byte.MaxValue;
+        MyPlayer.RpcSetRoleDesync(RoleTypes.Crewmate, MyPlayer);
+        GuesserMessage(ScrapperTranslations.KickedFromGuessing).Send(MyPlayer);
+        DeleteAllShapeshifterObjects();
+    }
+    
+    private void ResetShapeshfiterObjects()
+    {
+        DeleteAllShapeshifterObjects();
+
+        int playerIndex = 0;
+        foreach (PlayerControl player in Players.GetAlivePlayers())
+        {
+            if (player.PlayerId == MyPlayer.PlayerId) continue;
+            shapeshifterObjects.Add(new GuesserShapeshifterObject(MyPlayer, playerIndex, GetNameFromIndex(playerIndex), player));
+            playerIndex += 1;
+        }
+
+        int leftOverPlayers = 15 - playerIndex;
+        for (int i = 0; i < leftOverPlayers; i++)
+        {
+            // Create a NET OBJECT instead of using a player.
+            shapeshifterObjects.Add(new GuesserShapeshifterObject(MyPlayer, playerIndex, GetNameFromIndex(playerIndex), null));
+            playerIndex += 1;
+        }
+
+        return;
+
+        string GetNameFromIndex(int thisIndex)
+        {
+            switch (thisIndex)
+            {
+                case 0:
+                    return Color.white.Colorize(LeftArrow);
+                case 1:
+                    return Color.white.Colorize(ScrapperTranslations.PageIndex.Formatted(currentPageNum, Mathf.CeilToInt(currentShopItems.Count() / 12f)));
+                case 2:
+                    return Color.white.Colorize(RightArrow);
+                default:
+                    int listIndex = thisIndex - 3;
+                    listIndex = (currentPageNum - 1) * 12 + listIndex;
+                    if (listIndex >= currentShopItems.Count()) return NoRoleHere;
+                    return currentShopItems[listIndex].ToDisplay();
+            }
+        }
+    }
+
+    private void DeleteAllShapeshifterObjects()
+    {
+        shapeshifterObjects.ForEach(o => o.Delete());
+        shapeshifterObjects = [];
+    }
+
+    private void HandleShapeshifterChoice(GuesserShapeshifterObject shiftableObject)
+    {
+        switch (shiftableObject.PlayerIndex)
+        {
+            case 0: // left
+                int startPageNum = currentPageNum;
+                currentPageNum -= 1;
+                if (currentPageNum < 1) currentPageNum = Mathf.CeilToInt(currentShopItems.Count() / 12f);
+                shiftTimer.StartThenRun(CancelGuessingTimerDelay, ShiftTimer);
+                GuesserMessage(ScrapperTranslations.MoreTimeGiven).Send(MyPlayer);
+                if (startPageNum != currentPageNum) ResetShapeshfiterObjects();
+                SendCnoRows();
+                break;
+            case 1: // pressing page icon.
+                break;
+            case 2: // right
+                int startPageNumRight = currentPageNum;
+                currentPageNum += 1;
+                int maxPages  = Mathf.CeilToInt(currentShopItems.Count() / 12f);
+                if (currentPageNum > maxPages) currentPageNum = 1;
+                shiftTimer.StartThenRun(CancelGuessingTimerDelay, ShiftTimer);
+                GuesserMessage(ScrapperTranslations.MoreTimeGiven).Send(MyPlayer);
+                if (startPageNumRight != currentPageNum) ResetShapeshfiterObjects();
+                SendCnoRows();
+                break;
+            default:
+                int playerIndex = shiftableObject.PlayerIndex;
+                if (playerIndex > 14) return; // crowded detection.
+                int listIndex = playerIndex - 3;
+                listIndex = (currentPageNum - 1) * 12 + listIndex;
+                if (listIndex >= currentShopItems.Count()) return;
+                shiftTimer.Finish(true);
+                DeleteAllShapeshifterObjects();
+                ShopItem item = currentShopItems[listIndex];
+                scrapAmount -= item.Cost;
+                GetChatHandler().Message(ScrapperTranslations.PurchaseItemMessage.Formatted(item.Name, scrapAmount)).Send();
+                item.Action();
+                currentShopItems = shopItems.Where(si => si.Enabled && si.Cost <= scrapAmount).ToArray();
+                isShapeshifterRole = false;
+                currentlyGuessing = false;
+                MyPlayer.RpcSetRoleDesync(RoleTypes.Crewmate, MyPlayer);
+                break;
+        }
+    }
+
+    private void SendCnoRows()
+    {
+        if (MyPlayer.AmOwner) return;
+        StringBuilder stringBuilder = new();
+        stringBuilder.Append(ScrapperTranslations.ShifterMenuHelpText);
+        stringBuilder.AppendLine();
+
+        int lastRow = -1;
+        bool firstRole = true;
+        shapeshifterObjects.ForEach(obj =>
+        {
+            if (!obj.IsCno()) return;
+            int curRow = Mathf.CeilToInt((float)(obj.PlayerIndex + 1) / 3f);
+            if (curRow != lastRow)
+            {
+                stringBuilder.AppendLine();
+                stringBuilder.Append(ScrapperTranslations.RowText.Formatted(curRow));
+                firstRole = true;
+            }
+            lastRow = curRow;
+            if (!firstRole) stringBuilder.Append(", ");
+            stringBuilder.Append(curRow == 1 ? obj.GetText().RemoveHtmlTags() : obj.GetText());
+            firstRole = false;
+        });
+        if (lastRow == -1) return;
+        GuesserMessage(stringBuilder.ToString()).Send(MyPlayer);
+    }
 
     [RoleAction(LotusActionType.Vote)]
     private void HandleVoting(Optional<PlayerControl> player, MeetingDelegate meetingDelegate, ActionHandle handle)
     {
-        if (scrapAmount <= 0 || hasVoted) return;
+        if (hasVoted) return;
         player.Handle(p =>
         {
             if (p.PlayerId == MyPlayer.PlayerId) HandleSelfVote(handle);
-            else
-            {
-                handle.Cancel();
-                hasVoted=true;
-                GetChatHandler().Message(ScrapperTranslations.CanVoteOtherPlayers).Send(MyPlayer);
-            }
-        }, () => HandleSkip(handle));
+            else hasVoted=true;
+        }, () => hasVoted=true);
     }
 
     private void HandleSelfVote(ActionHandle handle)
     {
-        //if (!isCrafting) return;
         if (hasVoted) return;
-        if (currentShopItems.Length == 0) return;
         handle.Cancel();
-        if (selectedShopItem == byte.MaxValue) selectedShopItem = 0;
-        else selectedShopItem++;
-        if (selectedShopItem >= currentShopItems.Length) selectedShopItem = 0;
-        ShopItem item = currentShopItems[selectedShopItem];
-        GetChatHandler().Message(ScrapperTranslations.SelectedItemMessage.Formatted(item.Name, scrapAmount - item.Cost)).Send();
-    }
-
-    private void HandleSkip(ActionHandle handle)
-    {
-        if (selectedShopItem == byte.MaxValue)
-        {
-            handle.Cancel();
-            hasVoted = true;
-            GetChatHandler().Message(ScrapperTranslations.CanVoteOtherPlayersOnSkip).Send(MyPlayer);
-            return;
-        }
-        if (selectedShopItem >= currentShopItems.Length)
-        {
-            handle.Cancel();
-            return;
-        }
-        ShopItem item = currentShopItems[selectedShopItem];
-        scrapAmount -= item.Cost;
-        handle.Cancel();
-        GetChatHandler().Message(ScrapperTranslations.PurchaseItemMessage.Formatted(item.Name, scrapAmount)).Send();
-        item.Action();
-        currentShopItems = shopItems.Where(si => si.Enabled && si.Cost <= scrapAmount).ToArray();
-        GetChatHandler().Message(ScrapperTranslations.CurrentShopMessage.Formatted(CustomNameIndicator())).Send();
+        StartCrafting();
     }
 
     [RoleAction(LotusActionType.Interaction)]
@@ -416,6 +614,13 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
     public void UpdateButton()
     {
         if (!fixedUpdateLock.AcquireLock()) return;
+        if (!MyPlayer.IsModded()) return;
+        if (!MyPlayer.AmOwner)
+        {
+            if (MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault() == null) Vents.FindRPC((uint)BloomModCalls.UpdateScrapper)?.Send([MyPlayer.OwnerId],false);
+            else Vents.FindRPC((uint)BloomModCalls.UpdateScrapper)?.Send([MyPlayer.OwnerId],true);
+            return;
+        }
         RoleButton petButton = UIManager.PetButton;
         if (MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault() == null || !hasKnife)
         {
@@ -438,7 +643,13 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
             petButton.SetMaterial(HudManager.Instance.SabotageButton.buttonLabelText.fontMaterial);
         }
         RoleButton ventButton = UIManager.AbilityButton;
-        if (radioCooldown.IsReady() && !sabotageOn && hasRadio)
+        if (!meetingEnded)
+        {
+            ventButton.SetText("Craft")
+                .SetSprite(() => AmongUsButtonSpriteReferences.AbilityButtonSprite)
+                .SetMaterial(HudManager.Instance.AbilityButton.buttonLabelText.fontMaterial);
+        }
+        else if (radioCooldown.IsReady() && !sabotageOn && hasRadio)
         {
             ventButton.SetText("Sabotage")
             .SetSprite(() => HudManager.Instance.SabotageButton.graphic.sprite)
@@ -468,6 +679,54 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
             .SetSprite(() => HudManager.Instance.SabotageButton.graphic.sprite)
         : abilityButton.SetText("Vent")
             .SetSprite(() => AmongUsButtonSpriteReferences.VentButtonSprite);
+
+    [ModRPC((uint)BloomModCalls.UpdateScrapper, RpcActors.Host, RpcActors.NonHosts)]
+    private static void UpdateScrapper(bool closeplayer)
+    {
+        Scrapper? scrapper = PlayerControl.LocalPlayer.PrimaryRole<Scrapper>();
+        if (scrapper == null) return;
+        RoleButton petButton = scrapper.UIManager.PetButton;
+        if (!closeplayer || !scrapper.hasKnife)
+        {
+            if (scrapper.hasLaser)
+            {
+                if (!scrapper.aiming) petButton.SetText("Aim Laser");
+                else petButton.SetText("Fire");
+                petButton.SetSprite(() => LotusAssets.LoadSprite("Buttons/Imp/sniper_aim.png", 130, true))
+                    .SetMaterial(HudManager.Instance.SabotageButton.buttonLabelText.fontMaterial);
+            }
+            else petButton.RevertSprite().SetText("Pet").SetMaterial(HudManager.Instance.AbilityButton.buttonLabelText.fontMaterial);
+            petButton.BindCooldown(null);
+            petButton.GetButton().SetCoolDown(0, 1);
+        }
+        else
+        {
+            petButton.SetText("Kill")
+                .BindCooldown(scrapper.knifeCooldown)
+                .SetSprite(() => AmongUsButtonSpriteReferences.KillButtonSprite);
+            petButton.SetMaterial(HudManager.Instance.SabotageButton.buttonLabelText.fontMaterial);
+        }
+        RoleButton ventButton = scrapper.UIManager.AbilityButton;
+        if (!scrapper.meetingEnded)
+        {
+            ventButton.SetText("Craft")
+                .SetSprite(() => AmongUsButtonSpriteReferences.AbilityButtonSprite)
+                .SetMaterial(HudManager.Instance.AbilityButton.buttonLabelText.fontMaterial);
+        }
+        else if (scrapper.radioCooldown.IsReady() && !scrapper.sabotageOn && scrapper.hasRadio)
+        {
+            ventButton.SetText("Sabotage")
+                .SetSprite(() => HudManager.Instance.SabotageButton.graphic.sprite)
+                .SetMaterial(HudManager.Instance.SabotageButton.buttonLabelText.fontMaterial);
+        }
+        else
+        {
+            ventButton.SetText("Vent")
+                .SetSprite(() => AmongUsButtonSpriteReferences.VentButtonSprite)
+                .SetMaterial(HudManager.Instance.AbilityButton.buttonLabelText.fontMaterial);
+        }
+        ventButton.GetButton().SetCoolDown(0, 1);
+    }
 
     protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Neutrals.Killing.Scrapper";
 
@@ -555,9 +814,94 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
         base.Modify(roleModifier)
             .RoleColor(new Color(0.6f, 0.6f, 0.6f))
             .Faction(FactionInstances.Neutral)
-            .RoleAbilityFlags(RoleAbilityFlag.IsAbleToKill)
+            .RoleAbilityFlags(RoleAbilityFlag.IsAbleToKill | RoleAbilityFlag.UsesPet)
             .SpecialType(SpecialType.NeutralKilling)
             .OptionOverride(Override.CrewLightMod, () => AUSettings.ImpostorLightMod());
+    
+    private class GuesserShapeshifterObject
+    {
+        public GuesserShiftableObject? NetObject;
+        public PlayerControl? RealPlayer;
+        public int PlayerIndex;
+
+        private PlayerControl guesser;
+        private string currentName;
+        private bool isCno;
+
+        private Remote<NameComponent>? overridenName;
+        private Remote<IndicatorComponent>? overridenIndicator;
+        private Remote<RoleComponent>? overridenRole;
+        private Remote<CounterComponent>? overridenCounter;
+        private Remote<TextComponent>? overridenText;
+
+        public GuesserShapeshifterObject(PlayerControl guesser, int index, string currentName, PlayerControl? vanillaPlayer)
+        {
+            PlayerIndex = index;
+            this.guesser  = guesser;
+            this.currentName = currentName;
+            if (vanillaPlayer == null)
+            {
+                isCno = true;
+                NetObject = new GuesserShiftableObject(currentName, new Vector2(100000, 10000), guesser.PlayerId);
+                return;
+            }
+            RealPlayer = vanillaPlayer;
+
+            var nameModel = vanillaPlayer.NameModel();
+            overridenName = nameModel.GetComponentHolder<NameHolder>().Add(new NameComponent(new LiveString(() => currentName), GameState.InMeeting, ViewMode.Absolute, viewers:guesser));
+            overridenIndicator = nameModel.GetComponentHolder<IndicatorHolder>().Add(new IndicatorComponent(new LiveString(string.Empty), GameState.InMeeting, ViewMode.Absolute, viewers: guesser));
+            overridenRole = nameModel.GetComponentHolder<RoleHolder>().Add(new RoleComponent(new LiveString(string.Empty), [GameState.InMeeting], ViewMode.Absolute, viewers:guesser));
+            overridenCounter = nameModel.GetComponentHolder<CounterHolder>().Add(new CounterComponent(new LiveString(string.Empty), [GameState.InMeeting], ViewMode.Absolute, viewers: guesser));
+            overridenText = nameModel.GetComponentHolder<TextHolder>().Add(new TextComponent(new LiveString(string.Empty), GameState.InMeeting, ViewMode.Absolute, viewers: guesser));
+
+            if (guesser.AmOwner) nameModel.RenderFor(guesser);
+            // send at a DELAY so that guesser message doesn't clear the name.
+            else Async.Schedule(() => nameModel.RenderFor(guesser, force: true), NetUtils.DeriveDelay(1f));
+
+        }
+
+        public void ChangeName(string newName)
+        {
+            currentName = newName;
+            NetObject?.RpcChangeSprite(newName);
+            RealPlayer?.NameModel().RenderFor(guesser);
+        }
+
+        public bool IsCno() => isCno;
+        public string GetText() => currentName;
+
+        public void Delete()
+        {
+            NetObject?.Despawn();
+            overridenName?.Delete();
+            overridenIndicator?.Delete();
+            overridenCounter?.Delete();
+            overridenText?.Delete();
+            overridenRole?.Delete();
+            if (RealPlayer != null) RealPlayer.SetChatName(RealPlayer.name);
+        }
+    }
+
+    private class GuesserShiftableObject : ShiftableNetObject
+    {
+        public GuesserShiftableObject(string objectName, Vector2 position, byte visibleTo = byte.MaxValue) : base(
+            objectName, position, visibleTo)
+        {
+
+        }
+
+        public override void SetupOutfit()
+        {
+            PlayerControl.LocalPlayer.Data.Outfits[PlayerOutfitType.Default].PlayerName = Sprite;
+            PlayerControl.LocalPlayer.Data.Outfits[PlayerOutfitType.Default].ColorId = 0;
+            PlayerControl.LocalPlayer.Data.Outfits[PlayerOutfitType.Default].HatId = "";
+            PlayerControl.LocalPlayer.Data.Outfits[PlayerOutfitType.Default].SkinId = "";
+            PlayerControl.LocalPlayer.Data.Outfits[PlayerOutfitType.Default].PetId = "";
+            PlayerControl.LocalPlayer.Data.Outfits[PlayerOutfitType.Default].VisorId = "";
+        }
+    }
+    
+    protected ChatHandler GuesserMessage(string message) => ChatHandler.Of(message, RoleColor.Colorize(RoleName)).LeftAlign();
 
     [Localized(nameof(Scrapper))]
     internal static class ScrapperTranslations
@@ -582,7 +926,7 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
 
         [Localized(nameof(ShopMessage))]
         public static string ShopMessage =
-            "You can craft items during meetings. Only items you have enough scrap for will show. To craft an item, first vote yourself until that item is selected. Then skip to continue.\nVoting for ANY OTHER player will cancel crafting, otherwise you will still remain in craft mode.";
+            "You can craft items during meetings. Only items you have enough scrap for will show. To craft an item, first vote yourself so the Shapeshift menu appears. Then select the item you want to craft.";
 
         [Localized(nameof(CurrentShopMessage))]
         public static string CurrentShopMessage = "You can now craft:\n{0}";
@@ -592,14 +936,20 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
 
         [Localized(nameof(PurchaseItemMessage))]
         public static string PurchaseItemMessage = "You have crafted: {0}. You now have {1} scrap leftover.";
+        
+        [Localized(nameof(KickedFromGuessing))] public static string KickedFromGuessing = "You took too long to make a choice. You have been kicked from crafting.";
+        [Localized(nameof(MoreTimeGiven))] public static string MoreTimeGiven = "You made a choice. The timer has been reset.";
+        [Localized(nameof(PageIndex))] public static string PageIndex = "Page {0}/{1}";
+        [Localized(nameof(RowText))] public static string RowText = "Row {0}: ";
+        [Localized(nameof(ShifterMenuHelpText))] public static string ShifterMenuHelpText = "The extra options on the Shapeshifter menu appear as another player.\nBelow is the correct text that should be displayed:";
 
         [Localized(nameof(CanVoteOtherPlayers))]
-        public static string CanVoteOtherPlayers = "You can now vote regularly as you voted someone other than you and didn't skip.";
+        public static string CanVoteOtherPlayers = "You can now vote yourself as you en.";
 
         [Localized(nameof(CanVoteOtherPlayersOnSkip))]
         public static string CanVoteOtherPlayersOnSkip = "You can now vote regularly as you skipped before selecting something to craft.";
         [Localized(nameof(CanVoteOtherPlayersOnItem))]
-        public static string CanVoteOtherPlayersOnItem = "You can now vote regularly as you selected to end crafting.";
+        public static string CanVoteOtherPlayersOnItem = "You can now vote yourself as you selected to end crafting.";
 
         [Localized(ModConstants.Options)]
         internal static class MafiaOptionTranslations
