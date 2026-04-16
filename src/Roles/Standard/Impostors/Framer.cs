@@ -9,7 +9,7 @@ using Lotus.API.Vanilla.Meetings;
 using Lotus.Chat;
 using Lotus.Extensions;
 using Lotus.Factions.Impostors;
-using Lotus.GameModes.Standard;
+using Lotus.GameModes.Normal.Standard;
 using Lotus.GUI;
 using Lotus.GUI.Name;
 using Lotus.GUI.Name.Components;
@@ -23,7 +23,6 @@ using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Trackers;
-using Lotus.Roles.RoleGroups.Impostors;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Utilities;
 using LotusBloom.RPC;
@@ -53,7 +52,7 @@ public class Framer: Shapeshifter, IRoleUI
     private bool initialSkip;
     [NewOnSetup] private MeetingPlayerSelector voteSelector = null!;
 
-    public static List<Lotus.Roles.CustomRole> Imps = StandardRoles.Instance.AllRoles.Where(R => R.Faction is ImpostorFaction).ToList();
+    public static List<Lotus.Roles.CustomRole> Imps = NormalStandardRoles.Instance.AllRoles.Where(R => R.Faction is ImpostorFaction).ToList();
     
     public void ResendMessages() => CHandler().Message(FramerTranslations.VotePlayerInfo).Send(MyPlayer);
 
