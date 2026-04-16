@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Lotus.GameModes.Standard;
+using Lotus.GameModes.Normal.Standard;
 using Lotus.Victory;
 using Lotus.Victory.Conditions;
 using LotusBloom.Roles.Standard.Cult;
 using HarmonyLib;
 using Lotus.API.Odyssey;
 using Lotus.API.Player;
-using Lotus.API.Reactive.HookEvents;
 using Lotus.Extensions;
 using Lotus.Factions.Crew;
 using Lotus.Factions.Impostors;
 using VentLib.Logging;
 using VentLib.Utilities.Extensions;
-using LotusBloom.Roles.Standard.Modifiers;
 
 namespace LotusBloom.Patches;
 
@@ -22,11 +20,11 @@ public static class LotusPatches
 {
     private static readonly StandardLogger _log = LoggerFactory.GetLogger<StandardLogger>(typeof(LotusPatches));
     
-    [HarmonyPatch(typeof(StandardGameMode), nameof(StandardGameMode.SetupWinConditions))]
+    [HarmonyPatch(typeof(NormalStandardGameMode), nameof(NormalStandardGameMode.SetupWinConditions))]
     public static class SetupWinConditionsPatches
     {
         [HarmonyPrefix]
-        public static void Prefix(StandardGameMode __instance, WinDelegate winDelegate)
+        public static void Prefix(NormalStandardGameMode __instance, WinDelegate winDelegate)
         {
             new List<IWinCondition>
             {
@@ -36,7 +34,7 @@ public static class LotusPatches
         }
     }
 
-    [HarmonyPatch(typeof(StandardGameMode), nameof(StandardGameMode.ShowInformationToGhost))]
+    [HarmonyPatch(typeof(NormalStandardGameMode), nameof(NormalStandardGameMode.ShowInformationToGhost))]
     [HarmonyPatch(new Type[] { typeof(PlayerControl) })]
     public static class ShowInformationToGhostPatches 
     {
@@ -56,7 +54,7 @@ public static class LotusPatches
             if (candidates.Count == 0) return;
             PlayerControl candidate = candidates.GetRandom();
             if (!RoleInstances.Traitor.IsAssignableTo(candidate)) return;
-            StandardGameMode.Instance.Assign(candidate, RoleInstances.Traitor, false);
+            NormalStandardGameMode.Instance.Assign(candidate, RoleInstances.Traitor, false);
         }
     }
 }

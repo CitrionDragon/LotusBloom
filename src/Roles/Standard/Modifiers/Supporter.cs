@@ -6,27 +6,18 @@ using Lotus.API.Player;
 using Lotus.Extensions;
 using Lotus.Factions;
 using Lotus.Factions.Impostors;
-using Lotus.GameModes.Standard;
 using Lotus.GUI;
 using Lotus.GUI.Name;
-using Lotus.Logging;
-using Lotus.Managers;
 using Lotus.Roles;
-using Lotus.Roles.Events;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Overrides;
 using Lotus.Roles.Subroles;
 using Lotus.Utilities;
-using LotusBloom.Patches;
-using Rewired.Data.Mapping;
 using UnityEngine;
-using VentLib.Localization.Attributes;
 using VentLib.Logging;
 using VentLib.Options.UI;
-using VentLib.Utilities;
 using VentLib.Utilities.Collections;
-using VentLib.Utilities.Extensions;
 
 namespace LotusBloom.Roles.Standard.Modifiers;
 

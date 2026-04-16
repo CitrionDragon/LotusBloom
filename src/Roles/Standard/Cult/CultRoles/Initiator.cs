@@ -1,15 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
-using Lotus.API;
 using Lotus.API.Odyssey;
 using Lotus.Factions;
-using Lotus.Factions.Crew;
 using Lotus.GUI;
 using Lotus.GUI.Name;
-using Lotus.GUI.Name.Components;
 using Lotus.GUI.Name.Holders;
-using Lotus.GUI.Name.Impl;
-using Lotus.Managers.History.Events;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Interactions.Interfaces;
 using Lotus.Roles.Internals;
@@ -18,21 +13,15 @@ using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using Lotus.Victory;
 using Lotus.Extensions;
-using Lotus.Managers;
 using Lotus.Options;
 using UnityEngine;
 using VentLib.Logging;
 using VentLib.Options.UI;
-using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using Lotus.API.Player;
-using Lotus.GameModes.Standard;
 using Lotus.Roles;
-using Lotus.Factions.Neutrals;
-using Lotus.Factions.Impostors;
-using System.Xml.Serialization;
+using Lotus.GameModes.Normal.Standard;
 using LotusBloom.Factions.Cult;
-using Rewired;
 
 namespace LotusBloom.Roles.Standard.Cult.CultRoles;
 
@@ -80,7 +69,7 @@ public class Initiator : CultRole
         {
             var counterHolder = MyPlayer.NameModel().GetComponentHolder<CounterHolder>();
             if (counterHolder.Count > 0) counterHolder.RemoveAt(0);
-            StandardGameMode.Instance.Assign(MyPlayer, CultLeader);
+            NormalStandardGameMode.Instance.Assign(MyPlayer, CultLeader);
         }
     }
 
@@ -101,7 +90,7 @@ public class Initiator : CultRole
         if (initiatedPlayers.Count() < backedAlivePlayers || changeInMeeting) return false;
         var counterHolder = MyPlayer.NameModel().GetComponentHolder<CounterHolder>();
         if (counterHolder.Count > 0) counterHolder.RemoveAt(0);
-        StandardGameMode.Instance.Assign(MyPlayer, CultLeader);
+        NormalStandardGameMode.Instance.Assign(MyPlayer, CultLeader);
         disableWinCheck = true;
         return false;
     }

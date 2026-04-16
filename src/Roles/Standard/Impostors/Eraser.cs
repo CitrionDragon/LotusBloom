@@ -1,39 +1,23 @@
 using System.Collections.Generic;
-using Lotus.API;
 using Lotus.API.Odyssey;
 using Lotus.API.Player;
 using Lotus.GUI;
 using Lotus.GUI.Name;
-using Lotus.GUI.Name.Components;
-using Lotus.GUI.Name.Holders;
-using Lotus.Roles.Events;
 using Lotus.Roles.Interactions;
-using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
-using Lotus.Roles.Overrides;
 using Lotus.Extensions;
-using Lotus.Managers.History.Events;
-using Lotus.Statuses;
-using Lotus.Utilities;
 using UnityEngine;
-using VentLib.Localization.Attributes;
 using VentLib.Options.UI;
 using VentLib.Utilities;
-using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
-using VentLib.Utilities.Optionals;
-using Lotus.GameModes.Standard;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Roles;
 using Lotus.Factions.Impostors;
-using Lotus.Factions.Crew;
-using Lotus;
-using AmongUs.GameOptions;
 using Lotus.Options;
 using System.Linq;
 using Lotus.Factions;
-using Il2CppSystem.Runtime.Remoting.Messaging;
+using Lotus.GameModes.Normal.Standard;
 
 namespace LotusBloom.Roles.Standard.Impostors;
 
@@ -91,7 +75,7 @@ public class Eraser: Impostor
     {
         
         CustomRole targetRole = target.PrimaryRole();
-        StandardRoles roleHolder = StandardGameMode.Instance.RoleManager.RoleHolder;
+        NormalStandardRoles roleHolder = NormalStandardGameMode.Instance.RoleManager.RoleHolder;
         if (targetRole.SpecialType == SpecialType.NeutralKilling)
             switch (nkrole)
             {
@@ -111,7 +95,7 @@ public class Eraser: Impostor
             targetRole = roleHolder.Static.Impostor;
         else
             targetRole = roleHolder.Static.Crewmate;
-        CustomRole newRole = StandardGameMode.Instance.RoleManager.GetCleanRole(targetRole);
+        CustomRole newRole = NormalStandardGameMode.Instance.RoleManager.GetCleanRole(targetRole);
         Game.AssignRole(target, newRole);
         CustomRole role = target.PrimaryRole();
         role.Assign();
