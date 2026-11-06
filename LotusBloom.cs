@@ -24,8 +24,6 @@ public class LotusBloom: LotusAddon
     public static LotusBloom Instance = null!;
 
     private Harmony harmony;
-
-    
     
     public override void Initialize()
     {
@@ -50,7 +48,7 @@ public class LotusBloom: LotusAddon
         harmony.PatchAll(Assembly.GetExecutingAssembly());
     }
     
-    public override string Name { get; } = "Lotus Bloom Addon";
+    public override string Name { get; } = "Lotus Bloom";
 
     public override VentLib.Version.Version Version { get; } = new LotusBloomVersion();
 }
