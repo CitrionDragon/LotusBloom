@@ -863,7 +863,7 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
         public void ChangeName(string newName)
         {
             currentName = newName;
-            NetObject?.RpcChangeSprite(newName);
+            NetObject?.ChangeSprite(newName);
             RealPlayer?.NameModel().RenderFor(guesser);
         }
 
@@ -885,10 +885,9 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
     private class GuesserShiftableObject : ShiftableNetObject
     {
         public GuesserShiftableObject(string objectName, Vector2 position, byte visibleTo = byte.MaxValue) : base(
-            objectName, position, visibleTo)
-        {
+            objectName, position, visibleTo) {}
 
-        }
+        public void ChangeSprite(string sprite) => RpcChangeSprite(sprite);
 
         public override void SetupOutfit()
         {
