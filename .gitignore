@@ -5,3 +5,4 @@ bin/
 FodyWeavers.xml
 FodyWeavers.xsd
 /.idea
+/Logs
