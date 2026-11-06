@@ -22,6 +22,7 @@ using Lotus.API.Player;
 using Lotus.Roles;
 using Lotus.GameModes.Normal.Standard;
 using LotusBloom.Factions.Cult;
+using VentLib.Localization.Attributes;
 
 namespace LotusBloom.Roles.Standard.Cult.CultRoles;
 
@@ -119,11 +120,11 @@ public class Initiator : CultRole
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Convert Cooldown")
+            .SubOption(sub => sub.KeyName("Convert Cooldown", Translations.Options.ConvertCooldown)
                 .AddFloatRange(15f, 120f, 5f, 9, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(convertCooldown.SetDuration)
                 .Build())
-            .SubOption(sub => sub.Name("Change Role in Meeting")
+            .SubOption(sub => sub.KeyName("Change Role in Meeting", Translations.Options.ChangeRoleInMeeting)
                 .AddBoolean(true)
                 .BindBool(b => changeInMeeting = b)
                 .Build());
@@ -134,4 +135,17 @@ public class Initiator : CultRole
             .OptionOverride(new IndirectKillCooldown(convertCooldown.Duration))
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
     public override List<CustomRole> LinkedRoles() => base.LinkedRoles().Concat(new List<CustomRole>() { CultLeader }).ToList();
+
+    [Localized(nameof(Initiator))]
+    private static class Translations
+    {
+        [Localized(LBConstants.RoleName)] public static string RoleName = "Initiator";
+        [Localized(LBConstants.Description)] public static string Description = "Use Kill button on a Neutral to add them to your cult. Once all alive Neutrals are in The Cult, your role changes." + LBConstants.DescriptionFooter;
+        [Localized(LBConstants.Blurb)] public static string Blurb = "Convert Neutrals to the Cult";
+        [Localized(ModConstants.Options)] public static class Options
+        {
+            [Localized(nameof(ConvertCooldown))] public static string ConvertCooldown = "Convert Cooldown";
+            [Localized(nameof(ChangeRoleInMeeting))] public static string ChangeRoleInMeeting = "Change Role in Meeting";
+        }
+    }
 }

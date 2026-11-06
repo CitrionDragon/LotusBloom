@@ -1,0 +1,143 @@
+Name: English
+Authors:
+  - Citrion
+Translations:
+  Roles:
+    QuickShooter:
+      Options:
+        KillCooldown: Kill Cooldown
+        MaxBullets: Max Bullets
+        KeptBullets: Bullets Kept in Meeting
+      RoleName: QuickShooter
+      Description: When your reload cd is at 0, you can use pet button to store a bullet, resetting your kill cd. When you kill and have bullets, a bullet is used to set your kill cd to 0 immediately.\n\nFrom Lotus Bloom Addon
+      Blurb: Save Bullets
+    CrewCrew:
+      WarningMessage: The {0) is close to winning! Vote them out this meeting or lose!
+      RoleName: <Roles.CrewCrew.RoleName>
+      Blurb: <Roles.CrewCrew.Blurb>
+    Harbinger:
+      Options:
+        TasksPerRitualCircle: Tasks per Ritual Circle
+        RitualCirclesUntilWin: Ritual Circles Until Win
+        HasArrowToTarget: Has Arrow To Sacrifice
+      RoleName: Harbinger
+      Description: Complete tasks to gain an arrow to a Ritual Circle. Hold Pet at the Ritual Circle to complete it. When all Rituals are complete, kill the sacrifice to win.\n\nFrom Lotus Bloom Addon
+      Blurb: Complete Rituals
+      WinConditionName: Harbinger::0 Rituals Complete
+    Hypnotist:
+      RoleName: Hypnotist
+      Description: The Hypnotist can only perform a normal kill when there are 3 players left. Instead, they can control a player and force them to kill the next player they come near.\n\nUse the Kill button next to a player to gain control over them. If the person who was killed by the Hypnotist's victim has an ability that activates upon dying, then the victim will have the ability affect them.\n\nFrom Lotus Bloom Addon
+      Blurb: Control Players
+      ButtonText: Hypnotize
+    Reverie:
+      RoleName: Reverie
+      Description: You have a suicide timer. Complete tasks to refresh the timer and be protected from kills. Depending on settings, the timer goes away after all tasks are complete.\n\nFrom Lotus Bloom Addon
+      Blurb: Do Tasks or Die
+    Scrapper:
+      RoleName: Scrapper
+      Description: Gain Scrap by doing tasks or fixing sabotages. In meetings, use the Scrap to craft items. Ultimate items are powerful, one time use items. Only one of these may be crafted per game. Default costs are shown as (x).\n\n(5)Scrap Knife- Unlocks Kill by using Pet\n\n(3)Scrap Shield- Gain a one-time use shield\n\n(3)Spiked Shield- Requires Shield, gain a one-time Kill upon being interacted with\n\n(5)Radio- Gains the ability to sabatoge by venting. ◈ Indicates you can activate it, while ◇ means its unavailable.\n\n-=Ultimate Items=-\n(9)Scrap Laser- Hold pet to start aiming, then pet again after walking towards the direction you want to fire. All players in that line will die.\n\n(9)Adrenaline- Get decreased cooldown and increased speed per kill. May reset during meetings.\n\nFrom Lotus Bloom Addon
+      Blurb: Collect Scrap and Craft
+      Options:
+        RefreshTasks: Refresh Tasks When All Complete
+        StartsGameWithKnife: Starts Game With Knife
+        ModifyShopCosts: Modify Shop Costs
+        KnifeCost: Knife Cost
+        BulletCost: Bullet Cost
+        ShieldCost: Shield Cost
+        RoleRevealerCost: Role Revealer Cost
+        KnifeCooldown: Knife Cooldown
+        ScrapFromReporting: Scrap from Reporting Bodies
+        SpikedCost: Spiked Cost
+        RoleRadioCost: Role Radio Cost
+      ScrapText: 'Scrap::0: {0}'
+      KnifeItem: Scrap Knife
+      ShieldItem: Scrap Shield
+      BulletItem: Bullet
+      RevealerItem: Role Revealer
+      RevealerReady: Role Revealer Ready
+      ShopMessage: >-
+        You can craft items during meetings. To craft an item, first vote yourself so the Shapeshift menu appears. Then select the item you want to craft.
+      SelectedItemMessage: You have selected to crafted {0}. crafting this will leave you with {1} scrap. Press the skip vote button to continue your craft.
+      PurchaseItemMessage: 'You have crafted: {0}. You now have {1} scrap leftover.'
+      SpikedItem: Spiked
+      RadioItem: Role Radio
+      RadioReady: Role Radio Ready
+      CanVoteOtherPlayers: You can now vote regularly as you voted someone other than you and didn't skip.
+      CanVoteOtherPlayersOnSkip: You can now vote regularly as you skipped before selecting something to craft.
+      CanVoteOtherPlayersOnItem: You can now vote yourself as you selected to end crafting.
+      CurrentShopMessage: You can now craft:\n{0}
+      KickedFromGuessing: You took too long to make a choice. You have been kicked from crafting.
+      MoreTimeGiven: You made a choice. The timer has been reset.
+      PageIndex: Page {0}/{1}
+      RowText: 'Row {0}: '
+      ShifterMenuHelpText: >-
+        The extra options on the Shapeshifter menu appear as another player.
+
+        Below is the correct text that should be displayed:
+    Spy:
+      RoleName: Spy
+      Options:
+        TimeUntilBloom: Time Until Bloom
+        BloomsUntilRoleReveal: Blooms Until Role Reveal
+        PlantBloomCooldown: Plant Bloom Cooldown
+        RevealOnBloom: Reveal on Bloom
+      Description: The spy can use pet on someone to reveal their faction, then again to reveal their role. Once Spy completes a certian amount of their tasks, factions are revealed to all imps. After all tasks are complete, roles are also revealed.\n\nFrom Lotus Bloom Addon
+      Blurb: Reveal Roles for the Impostors
+      BloomsGrownStatistic: Blooms Grown
+      RolesRevealedStatistic: Roles Revealed
+    Initiator:
+      RoleName: Initiator
+      Description: Use Kill button on a Neutral to add them to your cult. Once all alive Neutrals are in The Cult, your role changes.\n\nFrom Lotus Bloom Addon
+      Blurb: Convert Neutrals to the Cult
+    CultLeader:
+      RoleName: CultLeader
+      Description: The Cult wins together, kill all non-cultists to win. You can now kill normally, or use pet to make a random Cultist kill. You are also immune to attacks from Cultists.\n\nFrom Lotus Bloom Addon
+      Blurb: Win with the Cult
+    Eraser:
+      RoleName: Eraser
+      Description: Use the pet button to erase a players' role. Depending on thier faction, they will turn into- An Impostor, a Crewmate, a (Copycat, Hitman, Jackal) (neutral killer), or an Opportunist (neutral passive).
+      Blurb: Erase Player's Roles
+    Shade:
+      RoleName: Shade
+      Description: As the Shade, you cannot win. Instead, you must use the pet or kill button to swap roles and modifiers with someone else to be able to win.\n\nFrom Lotus Bloom Addon
+      Blurb: Switch Roles or Lose
+    Radar:
+      RoleName: Radar
+      Description: Get an arrow towards the nearest player's location. The color of the arrow determines how close they are.\n\nFrom Lotus Bloom Addon
+      Blurb: Track nearby players
+    Socializer:
+      RoleName: Socializer
+      Description: You get a counter. Be around 2 or more players to decrease the counter. If a meeting starts and the counter is at 0, you have extra votes and can see all votes cast. Resets after each meeting.\n\nFrom Lotus Bloom Addon
+      Blurb: Be Around Others
+    Damocles:
+      RoleName: Damocles
+      Description: You have a timer, if it reaches 0, you die. You gain and lose time in different ways, and the timer is paused during meetings.\n\n-=Time modifiers=-\nKilling- +Kill Cooldown and extra (See Options)\nTeammate Killing- +10 sec\nVenting- +10 sec for each unique vent, resets after meeting\nSurviving Meetings- +time (See Options)\nEjecting- +30% of time if not an Ally, -20% if it is\nRepairing- -15 sec\nTeammate Dies- -20s\nReporting- -10% of time\n\nFrom Lotus Bloom Addon
+      Blurb: Increase Time or Die
+    Supporter:
+      RoleName: Supporter
+      Description: Reduce the kill cooldowns of nearby teammates.
+      Blurb: Lower Ally Cooldowns
+    Policeman:
+      RoleName: Policeman
+      Description: Use the Pet button to handcuff players, only one can be handcuffed at a time. The handcuffed player cannot do anything but move (if at all) or trying to break free using thier pet button.\n\n\nUse the Pet button while not near a player to switch Kill button modes. Interrogation has a chance of success, if the player is handcuffed the chance is increased. Kill will kill the Player if they are evil, or misfire on Crew. Free will remove handcuff from a Player.\n\nFrom Lotus Bloom Addon
+      Blurb: Capture and Interrogate Players
+    Traitor:
+      RoleName: Traitor
+      Description: You have betrayed the Crew! Use your original role to work with the Impostors. \n\nFrom Lotus Bloom Addon
+      Blurb: Betray the Crew
+    Framer:
+      RoleName: Framer
+      Description: You can select a target in a meeting to frame them, "revealing" them as an Impostor when you die. When shapeshifted, you can use the pet button to swap places with the player you are shifted as.
+      Blurb: Frame Players for Your Actions
+      OracleMessageTitle: Framer Ability
+      VotePlayerInfo: >-
+        Vote to select a player to "reveal" as an impostor on your death. You can vote someone else to change to that person.
+
+        After confirming your target cannot be changed.
+      SelectRole: 'You have selected: {0}'
+      UnselectRole: 'You have unselected: {0}'
+      VoteNormallyMessage: You may now vote normally.
+      SkipMessage: Vote the same player to continue.
+      RevealMessage: The Oracle has revealed to all that {0} is the {1}
+      FramerMessageTitle: Framer Ability
+      ButtonText: Swap

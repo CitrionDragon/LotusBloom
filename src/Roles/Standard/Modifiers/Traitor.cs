@@ -22,6 +22,7 @@ using Lotus.Factions.Crew;
 using Lotus.API.Player;
 using Lotus.GameModes.Normal.Standard;
 using Lotus.Roles.Overrides;
+using VentLib.Localization.Attributes;
 
 namespace LotusBloom.Roles.Standard.Modifiers;
 
@@ -98,21 +99,36 @@ public class Traitor : Subrole
     protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Modifiers.Traitor.yaml";
 
     public override string Identifier() => "";
+
+    [Localized(nameof(Traitor))]
+    private static class Translations
+    {
+        [Localized(LBConstants.RoleName)] public static string RoleName = "Traitor";
+        [Localized(LBConstants.Description)] public static string Description = "You have betrayed the Crew! Use your original role to work with the Impostors. " + LBConstants.DescriptionFooter;
+        [Localized(LBConstants.Blurb)] public static string Blurb = "Betray the Crew";
+        [Localized(ModConstants.Options)] public static class Options
+        {
+            [Localized(nameof(RestrictToCompatibleRoles))] public static string RestrictToCompatibleRoles = "Restrict to Compatible Roles";
+            [Localized(nameof(RoundsUntilTraitorCanSpawn))] public static string RoundsUntilTraitorCanSpawn = "Rounds until Traitor can Spawn";
+            [Localized(nameof(MaxImpsAliveForTraitorToSpawn))] public static string MaxImpsAliveForTraitorToSpawn = "Max Imps Alive for Traitor to Spawn";
+            [Localized(nameof(MinimumPlayersForTraitorToSpawn))] public static string MinimumPlayersForTraitorToSpawn = "Minimum Players for Traitor to Spawn";
+        }
+    }
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Restrict to Compatible Roles")//, Translations.Options.RestrictToCompatbileRoles)
+            .SubOption(sub => sub.KeyName("Restrict to Compatible Roles", Translations.Options.RestrictToCompatibleRoles)
                 .AddBoolean(true)
                 .BindBool(b => restrictedToCompatibleRoles = b)
                 .Build())
-            .SubOption(sub => sub.Name("Rounds until Traitor can Spawn")//, Translations.Options.BloomsUntilRoleReveal)
+            .SubOption(sub => sub.KeyName("Rounds until Traitor can Spawn", Translations.Options.RoundsUntilTraitorCanSpawn)
                 .AddIntRange(0, 10, 1, 3)
                 .BindInt(i => roundUntilSpawn = i)
                 .Build())
-            .SubOption(sub => sub.Name("Max Imps Alive for Traitor to Spawn")//, Translations.Options.BloomsUntilRoleReveal)
+            .SubOption(sub => sub.KeyName("Max Imps Alive for Traitor to Spawn", Translations.Options.MaxImpsAliveForTraitorToSpawn)
                 .AddIntRange(0, 3, 1, 1)
                 .BindInt(i => maximp = i)
                 .Build())
-            .SubOption(sub => sub.Name("Minimum Players for Traitor to Spawn")//, Translations.Options.BloomsUntilRoleReveal)
+            .SubOption(sub => sub.KeyName("Minimum Players for Traitor to Spawn", Translations.Options.MinimumPlayersForTraitorToSpawn)
                 .AddIntRange(0, 15, 1, 3)
                 .BindInt(i => roundUntilSpawn = i)
                 .Build());

@@ -280,15 +280,15 @@ public class Spy: MadCrewmate, IRoleUI
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Time until Bug Complete")//, Translations.Options.TimeUntilBloom)
+            .SubOption(sub => sub.KeyName("Time until Bug Complete", Translations.Options.TimeUntilBloom)
                 .BindFloat(f => bloomTime = f)
                 .AddFloatRange(0, 180, 5f, 3, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
-            .SubOption(sub => sub.Name("Plant Bug Cooldown")//, Translations.Options.PlantBloomCooldown)
+            .SubOption(sub => sub.KeyName("Plant Bug Cooldown", Translations.Options.PlantBloomCooldown)
                 .BindFloat(bloomCooldown.SetDuration)
                 .AddFloatRange(0, 180, 2.5f, 8, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
-            .SubOption(sub => sub.Name("Tasks until Factions are revealed")//, Translations.Options.BloomsUntilRoleReveal)
+            .SubOption(sub => sub.KeyName("Tasks until Factions are revealed", Translations.Options.BloomsUntilRoleReveal)
                 .AddIntRange(0, 10, 1, 3)
                 .BindInt(i => tasksForFaction = i)
                 .Build());
@@ -302,6 +302,10 @@ public class Spy: MadCrewmate, IRoleUI
     [Localized(nameof(Spy))]
     private static class Translations
     {
+        [Localized(LBConstants.RoleName)] public static string RoleName = "Spy";
+        [Localized(LBConstants.Description)] public static string Description = "The spy can use pet on someone to reveal their faction, then again to reveal their role. Once Spy completes a certian amount of their tasks, factions are revealed to all imps. After all tasks are complete, roles are also revealed." + LBConstants.DescriptionFooter;
+        [Localized(LBConstants.Blurb)] public static string Blurb = "Reveal Roles for the Impostors";
+
         [Localized(nameof(BloomsGrownStatistic))]
         public static string BloomsGrownStatistic = "Blooms Grown";
 

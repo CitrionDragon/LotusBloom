@@ -1,3 +1,5 @@
+global using LotusBloom;
+global using Lotus;
 using Lotus.Addons;
 using LotusBloom.Version;
 using Lotus.Roles;
@@ -22,6 +24,8 @@ public class LotusBloom: LotusAddon
     public static LotusBloom Instance = null!;
 
     private Harmony harmony;
+
+    
     
     public override void Initialize()
     {

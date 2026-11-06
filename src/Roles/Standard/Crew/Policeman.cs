@@ -36,6 +36,7 @@ using Lotus.Roles.GUI;
 using VentLib;
 using VentLib.Networking.RPC.Attributes;
 using LotusBloom.RPC;
+using VentLib.Localization.Attributes;
 
 namespace LotusBloom.Roles.Standard.Crew;
 
@@ -382,35 +383,38 @@ public class Policeman : Crewmate, IRoleUI
         base.RegisterOptions(optionStream)
             .Color(RoleColor)
             .SubOption(sub => sub
-                .Name("Interrogate Cooldown")//, Translations.Options.KillCooldown)
+                .KeyName("Interrogate Cooldown", PolicemanTranslations.Options.InterrogateCooldown)//, Translations.Options.KillCooldown)
                 .BindFloat(this.InterrogateCooldown.SetDuration)
                 .AddFloatRange(0, 120, 2.5f, 12, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
-            .SubOption(sub => sub.Name("Interrogate Success Chance")//, DeadlyTranslations.Options.CooldownReduction)
+            .SubOption(sub => 
+                sub.KeyName("Interrogate Success Chance", PolicemanTranslations.Options.InterrogateSuccessChance)//, DeadlyTranslations.Options.CooldownReduction)
                 .AddIntRange(0, 100, 5, 5, "%")
                 .BindInt(i => InterrogateChance = i)
                 .Build())
-            .SubOption(sub => sub.Name("Interrogate Handcuffed Success Chance")//, DeadlyTranslations.Options.CooldownReduction)
+            .SubOption(sub => 
+                sub.KeyName("Interrogate Handcuffed Success Chance", PolicemanTranslations.Options.InterrogateHandcuffedSuccessChance)//, DeadlyTranslations.Options.CooldownReduction)
                 .AddIntRange(0, 100, 5, 5, "%")
                 .BindInt(i => InterrogateHandcuffChance = i)
                 .Build())
             .SubOption(sub => sub
-                .Name("Total Handcuffs")//, Translations.Options.TotalShots)
+                .KeyName("Total Handcuffs", PolicemanTranslations.Options.TotalHandcuffs)//, Translations.Options.TotalShots)
                 .Bind(v => this.totalhandcuffs = (int)v)
                 .AddIntRange(1, 30, 1, 4)
                 .Build())
             .SubOption(sub => sub
-                .Name("Handcuff Cooldown")//, Translations.Options.KillCooldown)
+                .KeyName("Handcuff Cooldown", PolicemanTranslations.Options.HandcuffCooldown)//, Translations.Options.KillCooldown)
                 .BindFloat(this.handcuffCooldown.SetDuration)
                 .AddFloatRange(0, 120, 2.5f, 12, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
             .SubOption(sub => sub
-                .Name("Handcuffed Speed")//, Translations.Options.SpeedIncrease)
+                .KeyName("Handcuffed Speed", PolicemanTranslations.Options.HandcuffedSpeed)//, Translations.Options.SpeedIncrease)
                 .Value(v =>  v.Text("Frozen").Color(new Color(1f, 0.61f, 0.33f)).Value(-1f).Build())
                 .AddFloatRange(0.25f, 2.5f, 0.25f, 3)
                 .BindFloat(f => handcuffSpeed = f)
                 .Build())
-            .SubOption(sub => sub.Name("Handcuff Break Chance")//, DeadlyTranslations.Options.CooldownReduction)
+            .SubOption(sub => 
+                sub.KeyName("Handcuff Break Chance", PolicemanTranslations.Options.HandcuffBreakChance)//, DeadlyTranslations.Options.CooldownReduction)
                 .AddIntRange(0, 100, 5, 5, "%")
                 .BindInt(i => BreakChance = i)
                 .Build());
@@ -426,5 +430,42 @@ public class Policeman : Crewmate, IRoleUI
             .OptionOverride(Override.KillCooldown, () => InterrogateCooldown.Duration)
             .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod())
             .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod() / 5, () => SabotagePatch.CurrentSabotage != null && SabotagePatch.CurrentSabotage.SabotageType() is SabotageType.Lights);
-    
+
+    [Localized(nameof(Policeman))]
+    public static class PolicemanTranslations
+    {
+        [Localized(LBConstants.RoleName)] 
+        public static string RoleName = "Policeman";
+
+        [Localized(LBConstants.Description)] 
+        public static string Description = "Use the Pet button to handcuff players, only one can be handcuffed at a time. The handcuffed player cannot do anything but move (if at all) or trying to break free using thier pet button.\n\n\nUse the Pet button while not near a player to switch Kill button modes. Interrogation has a chance of success, if the player is handcuffed the chance is increased. Kill will kill the Player if they are evil, or misfire on Crew. Free will remove handcuff from a Player." + LBConstants.DescriptionFooter;
+
+        [Localized(LBConstants.Blurb)] 
+        public static string Blurb = "Capture and Interrogate Players";
+        
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized("Interrogate Cooldown")]
+            public static string InterrogateCooldown = "Interrogate Cooldown";
+
+            [Localized("Handcuff Cooldown")]
+            public static string HandcuffCooldown = "Handcuff Cooldown";
+
+            [Localized("Handcuffed Speed")]
+            public static string HandcuffedSpeed = "Handcuffed Speed";
+
+            [Localized("Handcuff Break Chance")]
+            public static string HandcuffBreakChance = "Handcuff Break Chance";
+            
+            [Localized("Total Handcuffs")]
+            public static string TotalHandcuffs = "Total Handcuffs";
+            
+            [Localized("Interrogate Success Chance")]
+            public static string InterrogateSuccessChance = "Interrogate Success Chance";
+            
+            [Localized("Interrogate Handcuffed Success Chance")]
+            public static string InterrogateHandcuffedSuccessChance = "Interrogate Handcuffed Success Chance";
+        }
+    }
 }

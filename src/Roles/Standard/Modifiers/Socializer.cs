@@ -1,6 +1,8 @@
 using System.Linq;
 using Lotus.API.Odyssey;
+using Lotus.Options;
 using Lotus.API.Vanilla.Meetings;
+using Lotus.Extensions;
 using Lotus.GUI;
 using Lotus.GUI.Name;
 using Lotus.Roles;
@@ -13,6 +15,7 @@ using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Optionals;
+using VentLib.Localization.Attributes;
 
 namespace LotusBloom.Roles.Standard.Modifiers;
 
@@ -75,15 +78,28 @@ public class Socializer : Subrole
     public override string Identifier() => "❀";
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Time Before Benefits are Gained")//, Translations.Options.SpeedGainPerKill)
+            .SubOption(sub => sub.KeyName("Time Before Benefits are Gained", Translations.Options.TimeBeforeBenefitsAreGained)
                 .AddFloatRange(5f, 60f, 2.5f, 8)
                 .BindFloat(f => starttime = f)
                 .Build())
-            .SubOption(sub => sub.Name("Additional Votes Gained")//, Translations.Options.MayorAdditionalVotes)
+            .SubOption(sub => sub.KeyName("Additional Votes Gained", Translations.Options.AdditionalVotesGained)
                 .AddIntRange(0, 10, 1, 1)
                 .BindInt(i => additionalVotes = i)
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier)
         .RoleColor(new Color(1f,0.1f,0.55f));
+
+    [Localized(nameof(Socializer))]
+    private static class Translations
+    {
+        [Localized(LBConstants.RoleName)] public static string RoleName = "Socializer";
+        [Localized(LBConstants.Description)] public static string Description = "You get a counter. Be around 2 or more players to decrease the counter. If a meeting starts and the counter is at 0, you have extra votes and can see all votes cast. Resets after each meeting." + LBConstants.DescriptionFooter;
+        [Localized(LBConstants.Blurb)] public static string Blurb = "Be Around Others";
+        [Localized(ModConstants.Options)] public static class Options
+        {
+            [Localized(nameof(TimeBeforeBenefitsAreGained))] public static string TimeBeforeBenefitsAreGained = "Time Before Benefits are Gained";
+            [Localized(nameof(AdditionalVotesGained))] public static string AdditionalVotesGained = "Additional Votes Gained";
+        }
+    }
 }

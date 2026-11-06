@@ -184,17 +184,17 @@ public class Harbinger : TaskRoleBase
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddTaskOverrideOptions(base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Tasks Per Ritual Circle")
+            .SubOption(sub => sub.KeyName("Tasks Per Ritual Circle", Translations.Options.TasksPerRitualCircle)
                 .AddIntRange(1, 5, 1, 3)
                 .BindInt(i => tasksBeforeCircle = i)
                 .ShowSubOptionPredicate(o => (int)o > 1)
                 .Build())
-            .SubOption(sub => sub.Name("Ritual Circles Until Win")
+            .SubOption(sub => sub.KeyName("Ritual Circles Until Win", Translations.Options.RitualCirclesUntilWin)
                 .AddIntRange(1, 5, 1, 3)
                 .BindInt(r => circleToWin = r)
                 .ShowSubOptionPredicate(o => (int)o > 1)
                 .Build())
-            .SubOption(sub => sub.Name("Has Arrow To Sacrifice")
+            .SubOption(sub => sub.KeyName("Has Arrow To Sacrifice", Translations.Options.HasArrowToTarget)
                 .AddBoolean()
                 .BindBool(b => hasArrowToTarget = b)
                 .Build()));
@@ -202,6 +202,11 @@ public class Harbinger : TaskRoleBase
     [Localized(nameof(Harbinger))]
     private static class Translations
     {
+        [Localized(LBConstants.RoleName)] public static string RoleName = "Harbinger";
+        [Localized(LBConstants.Description)] public static string Description = "Complete tasks to gain an arrow to a Ritual Circle. Hold Pet at the Ritual Circle to complete it. When all Rituals are complete, kill the sacrifice to win." + LBConstants.DescriptionFooter;
+        [Localized(LBConstants.Blurb)] public static string Blurb = "Complete Rituals";
+        [Localized(nameof(WinConditionName))] public static string WinConditionName = "Harbinger::0 Rituals Complete";
+
         [Localized(ModConstants.Options)]
         public static class Options
         {
@@ -216,4 +221,3 @@ public class Harbinger : TaskRoleBase
         }
     }
 }
-

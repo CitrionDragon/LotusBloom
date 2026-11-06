@@ -19,6 +19,7 @@ using Lotus.API.Player;
 using Lotus.Roles;
 using Lotus.Roles.Events;
 using LotusBloom.Factions.Cult;
+using VentLib.Localization.Attributes;
 using Lotus.Roles.GUI.Interfaces;
 using Lotus.Roles.GUI;
 
@@ -112,7 +113,7 @@ public class CultLeader : CultRole, IRoleUI
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddKillCooldownOptions(base.RegisterOptions(optionStream)
-            .SubOption(sub2 => sub2.Name("Limited Cultist Kill Range")
+            .SubOption(sub2 => sub2.KeyName("Limited Cultist Kill Range", Translations.Options.LimitedCultistKillRange)
                 .AddBoolean(false)
                 .BindBool(b => limitedKillRange = b)
                 .Build()));
@@ -125,4 +126,16 @@ public class CultLeader : CultRole, IRoleUI
             .RoleFlags(RoleFlag.TransformationRole)
             .CanVent(false)
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
+
+    [Localized(nameof(CultLeader))]
+    private static class Translations
+    {
+        [Localized(LBConstants.RoleName)] public static string RoleName = "CultLeader";
+        [Localized(LBConstants.Description)] public static string Description = "The Cult wins together, kill all non-cultists to win. You can now kill normally, or use pet to make a random Cultist kill. You are also immune to attacks from Cultists." + LBConstants.DescriptionFooter;
+        [Localized(LBConstants.Blurb)] public static string Blurb = "Win with the Cult";
+        [Localized(ModConstants.Options)] public static class Options
+        {
+            [Localized(nameof(LimitedCultistKillRange))] public static string LimitedCultistKillRange = "Limited Cultist Kill Range";
+        }
+    }
 }

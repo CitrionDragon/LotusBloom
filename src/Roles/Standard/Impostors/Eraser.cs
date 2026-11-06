@@ -18,6 +18,7 @@ using Lotus.Options;
 using System.Linq;
 using Lotus.Factions;
 using Lotus.GameModes.Normal.Standard;
+using VentLib.Localization.Attributes;
 
 namespace LotusBloom.Roles.Standard.Impostors;
 
@@ -105,20 +106,20 @@ public class Eraser: Impostor
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Erase Cooldown")
+            .SubOption(sub => sub.KeyName("Erase Cooldown", Translations.Options.EraseCooldown)
                 .AddFloatRange(0, 120, 2.5f, 0, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(eraseCooldown.SetDuration)
                 .Build())
-            .SubOption(sub => sub.Name("Cooldown Increase per Erase")
+            .SubOption(sub => sub.KeyName("Cooldown Increase per Erase", Translations.Options.CooldownIncreasePerErase)
                 .AddFloatRange(0, 30, 0.5f, 5, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(v => cooldownIncrease = v)
                 .Build())
-            .SubOption(sub => sub.Name("Erase Takes Effect on Meeting")
+            .SubOption(sub => sub.KeyName("Erase Takes Effect on Meeting", Translations.Options.EraseTakesEffectOnMeeting)
                 .AddBoolean(false)
                 .BindBool(b => meetingErase = b)
                 .Build())
             .SubOption(sub => sub
-                .Name("Neutral Killing Role Change When Erased")//, nkrole)
+                .KeyName("Neutral Killing Role Change When Erased", Translations.Options.NeutralKillingRoleChangeWhenErased)
                 .BindInt(v => nkrole = (NkRoleChange)v)
                 .Value(v => v.Text("Hitman").Value(0).Color(Color.gray).Build())
                 .Value(v => v.Text("Copycat").Value(1).Color(new Color(1f, 0.7f, 0.67f)).Build())
@@ -130,5 +131,20 @@ public class Eraser: Impostor
         Hitman,
         Copycat,
         Jackal
+    }
+
+    [Localized(nameof(Eraser))]
+    private static class Translations
+    {
+        [Localized(LBConstants.RoleName)] public static string RoleName = "Eraser";
+        [Localized(LBConstants.Description)] public static string Description = "Use the pet button to erase a players' role. Depending on thier faction, they will turn into- An Impostor, a Crewmate, a (Copycat, Hitman, Jackal) (neutral killer), or an Opportunist (neutral passive).";
+        [Localized(LBConstants.Blurb)] public static string Blurb = "Erase Player's Roles";
+        [Localized(ModConstants.Options)] public static class Options
+        {
+            [Localized(nameof(EraseCooldown))] public static string EraseCooldown = "Erase Cooldown";
+            [Localized(nameof(CooldownIncreasePerErase))] public static string CooldownIncreasePerErase = "Cooldown Increase per Erase";
+            [Localized(nameof(EraseTakesEffectOnMeeting))] public static string EraseTakesEffectOnMeeting = "Erase Takes Effect on Meeting";
+            [Localized(nameof(NeutralKillingRoleChangeWhenErased))] public static string NeutralKillingRoleChangeWhenErased = "Neutral Killing Role Change When Erased";
+        }
     }
 }

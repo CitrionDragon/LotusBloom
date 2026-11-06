@@ -18,6 +18,7 @@ using UnityEngine;
 using VentLib.Logging;
 using VentLib.Options.UI;
 using VentLib.Utilities.Collections;
+using VentLib.Localization.Attributes;
 
 namespace LotusBloom.Roles.Standard.Modifiers;
 
@@ -95,14 +96,27 @@ public class Supporter : Subrole
     public override string Identifier() => "⁑";
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Cooldown Reduction")//, DeadlyTranslations.Options.CooldownReduction)
+            .SubOption(sub => sub.KeyName("Cooldown Reduction", Translations.Options.CooldownReduction)
                 .AddIntRange(0, 100, 5, 5, "%")
                 .BindInt(i => CooldownReduction = i)
                 .Build())
-            .SubOption(sub => sub.Name("Can Assign To Madmates")
+            .SubOption(sub => sub.KeyName("Can Assign To Madmates", Translations.Options.CanAssignToMadmates)
                 .AddBoolean()
                 .BindBool(b => MadmateAddon = b)
                 .Build());
+
+    [Localized(nameof(Supporter))]
+    private static class Translations
+    {
+        [Localized(LBConstants.RoleName)] public static string RoleName = "Supporter";
+        [Localized(LBConstants.Description)] public static string Description = "Reduce the kill cooldowns of nearby teammates.";
+        [Localized(LBConstants.Blurb)] public static string Blurb = "Lower Ally Cooldowns";
+        [Localized(ModConstants.Options)] public static class Options
+        {
+            [Localized(nameof(CooldownReduction))] public static string CooldownReduction = "Cooldown Reduction";
+            [Localized(nameof(CanAssignToMadmates))] public static string CanAssignToMadmates = "Can Assign To Madmates";
+        }
+    }
     protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier)
         .RoleColor(Color.red);
 }

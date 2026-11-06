@@ -206,15 +206,15 @@ public class Framer: Shapeshifter, IRoleUI
     
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddShapeshiftOptions(base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Shift Swap Cooldown")
+            .SubOption(sub => sub.KeyName("Shift Swap Cooldown", FramerTranslations.Options.ShiftSwapCooldown)
                 .AddFloatRange(0, 120, 2.5f, 0, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(swapCooldown.SetDuration)
                 .Build())
-            .SubOption(sub => sub.Name("Shift Target Can't Report Bodies")//, Translations.Options.CantCallEmergencyMeetings)
+            .SubOption(sub => sub.KeyName("Shift Target Can't Report Bodies", FramerTranslations.Options.ShiftTargetCantReportBodies)
                 .AddBoolean(false)
                 .BindBool(b => targetReport = b)
                 .Build())
-            .SubOption(sub => sub.Name("Framing Chooses Enabled Imps")//, Translations.Options.CantCallEmergencyMeetings)
+            .SubOption(sub => sub.KeyName("Framing Chooses Enabled Imps", FramerTranslations.Options.FramingChoosesEnabledImps)
                 .AddBoolean(false)
                 .BindBool(b => currentImps = b)
                 .Build()));
@@ -230,6 +230,21 @@ public class Framer: Shapeshifter, IRoleUI
     [Localized(nameof(Framer))]
     private static class FramerTranslations
     {
+        [Localized(LBConstants.RoleName)]
+        public static string RoleName = "Framer";
+
+        [Localized(LBConstants.Description)]
+        public static string Description = "You can select a target in a meeting to frame them, \"revealing\" them as an Impostor when you die. When shapeshifted, you can use the pet button to swap places with the player you are shifted as." + LBConstants.DescriptionFooter;
+
+        [Localized(LBConstants.Blurb)]
+        public static string Blurb = "Frame Players for Your Actions";
+        [Localized(ModConstants.Options)] public static class Options
+        {
+            [Localized(nameof(ShiftSwapCooldown))] public static string ShiftSwapCooldown = "Shift Swap Cooldown";
+            [Localized(nameof(ShiftTargetCantReportBodies))] public static string ShiftTargetCantReportBodies = "Shift Target Can't Report Bodies";
+            [Localized(nameof(FramingChoosesEnabledImps))] public static string FramingChoosesEnabledImps = "Framing Chooses Enabled Imps";
+        }
+
         [Localized(nameof(ButtonText))] public static string ButtonText = "Swap";
         [Localized(nameof(FramerMessageTitle))]
         public static string FramerMessageTitle = "Framer Ability";
