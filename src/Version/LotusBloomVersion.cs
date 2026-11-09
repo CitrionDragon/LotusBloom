@@ -8,6 +8,7 @@ namespace LotusBloom.Version;
 /// </summary>
 public class LotusBloomVersion : VentLib.Version.Version
 {
+    public const string VersionString = "1.2.2";
     public override VentLib.Version.Version Read(MessageReader reader)
     {
         return new LotusBloomVersion();
@@ -19,8 +20,8 @@ public class LotusBloomVersion : VentLib.Version.Version
 
     public override string ToSimpleName()
     {
-        return "Lotus Bloom Addon Version v1.2.0";
+        return $"Lotus Bloom";
     }
 
-    public override string ToString() => "LotusBloomAddon";
+    public override string ToString() => $"v{VersionString}";
 }

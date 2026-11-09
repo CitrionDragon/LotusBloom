@@ -57,4 +57,12 @@ public class Radar : Subrole
 
     protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier)
         .RoleColor(Color.green);
+
+    [Localized(nameof(Radar))]
+    private static class Translations
+    {
+        [Localized(LBConstants.RoleName)] public static string RoleName = "Radar";
+        [Localized(LBConstants.Description)] public static string Description = "Get an arrow towards the nearest player's location. The color of the arrow determines how close they are." + LBConstants.DescriptionFooter;
+        [Localized(LBConstants.Blurb)] public static string Blurb = "Track nearby players";
+    }
 }

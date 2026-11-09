@@ -1,3 +1,4 @@
+using Lotus;
 using Lotus.API;
 using Lotus.API.Odyssey;
 using Lotus.GUI;
@@ -105,37 +106,54 @@ public partial class Reverie : Crewmate
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Time Until Suicide")//, SerialKillerTranslations.SerialKillerOptionTranslations.TimeUntilSuicide)
+            .SubOption(sub => 
+                sub.KeyName("Time Until Suicide", ReverieTranslations.Options.TimeUntilSuicide)//, SerialKillerTranslations.SerialKillerOptionTranslations.TimeUntilSuicide)
                 .Bind(v => DeathTimer.Duration = (float)v)
                 .AddFloatRange(10, 120, 2.5f, 30, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
-            .SubOption(sub => sub.Name("Timer Begins After First Task")//, SerialKillerTranslations.SerialKillerOptionTranslations.TimerAfterFirstKill)
+            .SubOption(sub => sub.KeyName("Timer Begins After First Task", ReverieTranslations.Options.TimerAfterFirstKill)
                 .BindBool(b => beginsAfterFirstTask = b)
                 .AddBoolean(false)
                 .Build())
-            .SubOption(sub => sub.Name("Protection Duration")
+            .SubOption(sub => sub.KeyName("Protection Duration", ReverieTranslations.Options.ProtectionDuration)
                 .BindFloat(v => protectionAmt = v)
                 .AddFloatRange(2.5f, 180, 2.5f, 5, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
-            .SubOption(sub => sub.Name("Refresh Tasks When All Complete")//, Translations.Options.RefreshTasks)
+            .SubOption(sub => sub.KeyName("Refresh Tasks When All Complete", ReverieTranslations.Options.RefreshTasks)
                 .AddBoolean()
                 .BindBool(b => refreshTasks = b)
                 .Build());
     protected override RoleModifier Modify(RoleModifier roleModifier) => 
         base.Modify(roleModifier).RoleColor(new Color(0.95f, 0.65f, 0.04f));
 
-/*
-    [Localized(nameof(SerialKiller))]
-    private static class SerialKillerTranslations
+
+
+    [Localized(nameof(Reverie))]
+    private static class ReverieTranslations
     {
+        [Localized(LBConstants.RoleName)]
+        public static string RoleName = "Reverie";
+
+        [Localized(LBConstants.Description)]
+        public static string Description = "You have a suicide timer. Complete tasks to refresh the timer and be protected from kills. Depending on settings, the timer goes away after all tasks are complete." + LBConstants.DescriptionFooter;
+
+        [Localized(LBConstants.Blurb)] 
+        public static string Blurb = "Do tasks or die";
+        
         [Localized(ModConstants.Options)]
-        public static class SerialKillerOptionTranslations
+        public static class Options
         {
             [Localized(nameof(TimeUntilSuicide))]
             public static string TimeUntilSuicide = "Time Until Suicide";
-
+            
             [Localized(nameof(TimerAfterFirstKill))]
-            public static string TimerAfterFirstKill = "Timer Begins After First Kill";
+            public static string TimerAfterFirstKill = "Timer Begins After First Task";
+            
+            [Localized(nameof(ProtectionDuration))]
+            public static string ProtectionDuration = "Protection Duration";
+            
+            [Localized(nameof(RefreshTasks))]
+            public static string RefreshTasks = "Refresh Tasks When All Complete";
         }
-    }*/
+    }
 }

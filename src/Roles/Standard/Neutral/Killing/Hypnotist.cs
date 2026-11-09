@@ -153,6 +153,9 @@ public class Hypnotist : NeutralKillingBase, IRoleUI
     [Localized(nameof(Hypnotist))]
     public static class Translations
     {
+        [Localized(LBConstants.RoleName)] public static string RoleName = "Hypnotist";
+        [Localized(LBConstants.Description)] public static string Description = "The Hypnotist can only perform a normal kill when there are 3 players left. Instead, they can control a player and force them to kill the next player they come near.\n\nUse the Kill button next to a player to gain control over them. If the person who was killed by the Hypnotist's victim has an ability that activates upon dying, then the victim will have the ability affect them." + LBConstants.DescriptionFooter;
+        [Localized(LBConstants.Blurb)] public static string Blurb = "Control Players";
         [Localized(nameof(ButtonText))] public static string ButtonText = "Hypnotize";
     }
 }

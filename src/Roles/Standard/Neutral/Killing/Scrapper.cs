@@ -732,80 +732,80 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Modify Shop Costs")//, ModifyShopCosts)
+            .SubOption(sub => sub.KeyName("Modify Shop Costs", ScrapperTranslations.MafiaOptionTranslations.ModifyShopCosts)
                 .AddBoolean(false)
                 .BindBool(b => modifyShopCosts = b)
                 .ShowSubOptionPredicate(b => (bool)b)
-                .SubOption(sub2 => sub2.Name("Knife Cost")//, KnifeCost)
+                .SubOption(sub2 => sub2.KeyName("Knife Cost", ScrapperTranslations.MafiaOptionTranslations.KnifeCost)
                     .AddIntRange(0, 20, 1, 3)
                     .BindInt(i => knifeCost = i)
                     .Build())
-                .SubOption(sub2 => sub2.Name("Shield Cost")//, ShieldCost)
+                .SubOption(sub2 => sub2.KeyName("Shield Cost", ScrapperTranslations.MafiaOptionTranslations.ShieldCost)
                     .AddIntRange(0, 20, 1, 6)
                     .BindInt(i => shieldCost = i)
                     .Build())
-                .SubOption(sub2 => sub2.Name("Spiked Shield Cost")//, SpikedCost)
+                .SubOption(sub2 => sub2.KeyName("Spiked Shield Cost", ScrapperTranslations.MafiaOptionTranslations.SpikedCost)
                     .AddIntRange(0, 20, 1, 0)
                     .BindInt(i => spikedCost = i)
                     .Build())
-                .SubOption(sub2 => sub2.Name("Radio Cost")//, RoleRadioCost)
+                .SubOption(sub2 => sub2.KeyName("Radio Cost", ScrapperTranslations.MafiaOptionTranslations.RoleRadioCost)
                     .AddIntRange(0, 20, 1, 5)
                     .BindInt(i => radioCost = i)
                     .Build())
-                .SubOption(sub2 => sub2.Name("Scrap Laser Cost")//, RoleRadioCost)
+                .SubOption(sub2 => sub2.KeyName("Scrap Laser Cost", ScrapperTranslations.MafiaOptionTranslations.ScrapLaserCost)
                     .AddIntRange(0, 20, 1, 10)
                     .BindInt(i => laserCost = i)
                     .Build())
-                .SubOption(sub2 => sub2.Name("Adrenaline Cost")//, RoleRadioCost)
+                .SubOption(sub2 => sub2.KeyName("Adrenaline Cost", ScrapperTranslations.MafiaOptionTranslations.AdrenalineCost)
                     .AddIntRange(0, 20, 1, 10)
                     .BindInt(i => adrenalineCost = i)
                     .Build())
                 .Build())
-            .SubOption(sub => sub.Name("Starts Game WIth Knife")//, StartsGameWithKnife)
+            .SubOption(sub => sub.KeyName("Starts Game WIth Knife", ScrapperTranslations.MafiaOptionTranslations.StartsGameWithKnife)
                 .AddBoolean(false)
                 .BindBool(b => hasKnife = b)
                 .Build())
-            .SubOption(sub => sub.Name("Knife Cooldown")//, KnifeCooldown)
+            .SubOption(sub => sub.KeyName("Knife Cooldown", ScrapperTranslations.MafiaOptionTranslations.KnifeCooldown)
                 .Value(v => v.Text(GeneralOptionTranslations.GlobalText).Color(new Color(1f, 0.61f, 0.33f)).Value(-1f).Build())
                 .AddFloatRange(0, 120, 2.5f, 0, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(knifeCooldown.SetDuration)
                 .Build())
-            .SubOption(sub => sub.Name("Scrap Laser")
+            .SubOption(sub => sub.KeyName("Scrap Laser", ScrapperTranslations.MafiaOptionTranslations.ScrapLaser)
                 .AddBoolean(false)
                 .BindBool(b => laser = b)
                 .ShowSubOptionPredicate(b => (bool)b)
-                .SubOption(sub => sub.Name("Precise Shooting")
+                .SubOption(sub => sub.KeyName("Precise Shooting", ScrapperTranslations.MafiaOptionTranslations.PreciseShooting)
                     .AddBoolean(false)
                     .BindBool(b => preciseShooting = b)
                     .Build())
                 .Build())
-            .SubOption(sub => sub.Name("Adrenaline")
+            .SubOption(sub => sub.KeyName("Adrenaline", ScrapperTranslations.MafiaOptionTranslations.Adrenaline)
                 .AddBoolean(false)
                 .BindBool(b => adrenaline = b)
                 .ShowSubOptionPredicate(b => (bool)b)
-                .SubOption(sub => sub.Name("Cooldown Decrease per Kill")
+                .SubOption(sub => sub.KeyName("Cooldown Decrease per Kill", ScrapperTranslations.MafiaOptionTranslations.CooldownDecreasePerKill)
                     //.Value(v =>  v.Text(GeneralOptionTranslations.GlobalText).Color(new Color(1f, 0.61f, 0.33f)).Value(-1f).Build())
                     .AddFloatRange(0, 30, 0.5f, 5, GeneralOptionTranslations.SecondsSuffix)
                     .BindFloat(v => cooldowndecrease = v)
                     .Build())
-                .SubOption(sub => sub.Name("Additional Speed per Kill")//, Translations.Options.SpeedGainPerKill)
+                .SubOption(sub => sub.KeyName("Additional Speed per Kill", ScrapperTranslations.MafiaOptionTranslations.AdditionalSpeedPerKill)
                     .AddFloatRange(0.1f, 1f, 0.1f, 3)
                     .BindFloat(f => speedGainPerKill = f)
                     .Build())
-                .SubOption(sub => sub.Name("Adrenaline Reset on Meeting")
+                .SubOption(sub => sub.KeyName("Adrenaline Reset on Meeting", ScrapperTranslations.MafiaOptionTranslations.AdrenalineResetOnMeeting)
                     .AddBoolean(false)
                     .BindBool(b => adrenalineReset = b)
                     .Build())
                 .Build())
-            .SubOption(sub => sub.Name("Scrap from Doing Tasks")//, ScrapFromReporting)
+            .SubOption(sub => sub.KeyName("Scrap from Doing Tasks", ScrapperTranslations.MafiaOptionTranslations.ScrapFromDoingTasks)
                 .AddIntRange(1, 5, 1, 2)
                 .BindInt(i => scrapFromTasks = i)
                 .Build())
-            .SubOption(sub => sub.Name("Scrap from Fixing Sabotages")//, ScrapFromReporting)
+            .SubOption(sub => sub.KeyName("Scrap from Fixing Sabotages", ScrapperTranslations.MafiaOptionTranslations.ScrapFromFixingSabotages)
                 .AddIntRange(1, 10, 1, 2)
                 .BindInt(i => scrapFromBodies = i)
                 .Build())
-            .SubOption(sub => sub.Name("Refresh Tasks When All Complete")//, RefreshTasks)
+            .SubOption(sub => sub.KeyName("Refresh Tasks When All Complete", ScrapperTranslations.MafiaOptionTranslations.RefreshTasks)
                 .AddBoolean(true)
                 .BindBool(b => refreshTasks = b)
                 .Build());
@@ -863,7 +863,7 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
         public void ChangeName(string newName)
         {
             currentName = newName;
-            NetObject?.RpcChangeSprite(newName);
+            NetObject?.ChangeSprite(newName);
             RealPlayer?.NameModel().RenderFor(guesser);
         }
 
@@ -885,10 +885,9 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
     private class GuesserShiftableObject : ShiftableNetObject
     {
         public GuesserShiftableObject(string objectName, Vector2 position, byte visibleTo = byte.MaxValue) : base(
-            objectName, position, visibleTo)
-        {
+            objectName, position, visibleTo) {}
 
-        }
+        public void ChangeSprite(string sprite) => RpcChangeSprite(sprite);
 
         public override void SetupOutfit()
         {
@@ -906,6 +905,15 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
     [Localized(nameof(Scrapper))]
     internal static class ScrapperTranslations
     {
+        [Localized(LBConstants.RoleName)]
+        public static string RoleName = "Scrapper";
+
+        [Localized(LBConstants.Description)]
+        public static string Description = "Gain Scrap by doing tasks or fixing sabotages. In meetings, use the Scrap to craft items. Ultimate items are powerful, one time use items. Only one of these may be crafted per game. Default costs are shown as (x).\n\n(5)Scrap Knife- Unlocks Kill by using Pet\n\n(3)Scrap Shield- Gain a one-time use shield\n\n(3)Spiked Shield- Requires Shield, gain a one-time Kill upon being interacted with\n\n(5)Radio- Gains the ability to sabatoge by venting. ◈ Indicates you can activate it, while ◇ means its unavailable.\n\n-=Ultimate Items=-\n(9)Scrap Laser- Hold pet to start aiming, then pet again after walking towards the direction you want to fire. All players in that line will die.\n\n(9)Adrenaline- Get decreased cooldown and increased speed per kill. May reset during meetings." + LBConstants.DescriptionFooter;
+
+        [Localized(LBConstants.Blurb)]
+        public static string Blurb = "Collect Scrap and Craft";
+
         [Localized(nameof(ScrapText))]
         public static string ScrapText = "Scrap::0: {0}";
 
@@ -980,6 +988,16 @@ public class Scrapper: Engineer, ISabotagerRole, IRoleUI
 
             [Localized(nameof(ScrapFromReporting))]
             public static string ScrapFromReporting = "Scrap from Reporting Bodies";
+            [Localized(nameof(ScrapLaserCost))] public static string ScrapLaserCost = "Scrap Laser Cost";
+            [Localized(nameof(AdrenalineCost))] public static string AdrenalineCost = "Adrenaline Cost";
+            [Localized(nameof(ScrapLaser))] public static string ScrapLaser = "Scrap Laser";
+            [Localized(nameof(PreciseShooting))] public static string PreciseShooting = "Precise Shooting";
+            [Localized(nameof(Adrenaline))] public static string Adrenaline = "Adrenaline";
+            [Localized(nameof(CooldownDecreasePerKill))] public static string CooldownDecreasePerKill = "Cooldown Decrease per Kill";
+            [Localized(nameof(AdditionalSpeedPerKill))] public static string AdditionalSpeedPerKill = "Additional Speed per Kill";
+            [Localized(nameof(AdrenalineResetOnMeeting))] public static string AdrenalineResetOnMeeting = "Adrenaline Reset on Meeting";
+            [Localized(nameof(ScrapFromDoingTasks))] public static string ScrapFromDoingTasks = "Scrap from Doing Tasks";
+            [Localized(nameof(ScrapFromFixingSabotages))] public static string ScrapFromFixingSabotages = "Scrap from Fixing Sabotages";
         }
     }
 

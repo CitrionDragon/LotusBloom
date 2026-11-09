@@ -167,24 +167,24 @@ public class Shade: Impostor, IRoleUI
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Swap Cooldown")//, KnifeCooldown)
+            .SubOption(sub => sub.KeyName("Swap Cooldown", Translations.Options.SwapCooldown)
                 .Value(v =>  v.Text(GeneralOptionTranslations.GlobalText).Color(new Color(1f, 0.61f, 0.33f)).Value(-1f).Build())
                 .AddFloatRange(0, 120, 2.5f, 0, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(swapCooldown.SetDuration)
                 .Build())
-            .SubOption(sub => sub.Name("Can't Report Bodies")//, Translations.Options.CantCallEmergencyMeetings)
+            .SubOption(sub => sub.KeyName("Can't Report Bodies", Translations.Options.CantReportBodies)
                 .AddBoolean(false)
                 .BindBool(b => cantreport = b)
                 .Build())
-            .SubOption(sub => sub.Name("Can't Call Emergency Meetings")//, Translations.Options.CantCallEmergencyMeetings)
+            .SubOption(sub => sub.KeyName("Can't Call Emergency Meetings", Translations.Options.CantCallEmergencyMeetings)
                 .AddBoolean(false)
                 .BindBool(b => cantCallMeetings = b)
                 .Build())
-            .SubOption(sub => sub.Name("Shade Passes Converted Faction")//, Translations.Options.CantCallEmergencyMeetings)
+            .SubOption(sub => sub.KeyName("Shade Passes Converted Faction", Translations.Options.PassesConvertedFaction)
                 .AddBoolean(false)
                 .BindBool(b => passFaction = b)
                 .Build())
-            .SubOption(sub => sub.Name("Shade Ability Counts as Harmful")//, Translations.Options.CantCallEmergencyMeetings)
+            .SubOption(sub => sub.KeyName("Shade Ability Counts as Harmful", Translations.Options.AbilityCountsAsHarmful)
                 .AddBoolean(false)
                 .BindBool(b => isHostile = b)
                 .Build());
@@ -195,4 +195,20 @@ public class Shade: Impostor, IRoleUI
             .SpecialType(SpecialType.Neutral)
             .VanillaRole(RoleTypes.Impostor)
             .Faction(FactionInstances.Neutral);
+
+    [Localized(nameof(Shade))]
+    private static class Translations
+    {
+        [Localized(LBConstants.RoleName)] public static string RoleName = "Shade";
+        [Localized(LBConstants.Description)] public static string Description = "As the Shade, you cannot win. Instead, you must use the pet or kill button to swap roles and modifiers with someone else to be able to win." + LBConstants.DescriptionFooter;
+        [Localized(LBConstants.Blurb)] public static string Blurb = "Switch Roles or Lose";
+        [Localized(ModConstants.Options)] public static class Options
+        {
+            [Localized(nameof(SwapCooldown))] public static string SwapCooldown = "Swap Cooldown";
+            [Localized(nameof(CantReportBodies))] public static string CantReportBodies = "Can't Report Bodies";
+            [Localized(nameof(CantCallEmergencyMeetings))] public static string CantCallEmergencyMeetings = "Can't Call Emergency Meetings";
+            [Localized(nameof(PassesConvertedFaction))] public static string PassesConvertedFaction = "Shade Passes Converted Faction";
+            [Localized(nameof(AbilityCountsAsHarmful))] public static string AbilityCountsAsHarmful = "Shade Ability Counts as Harmful";
+        }
+    }
 }

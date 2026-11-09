@@ -12,7 +12,7 @@
 
     <PropertyGroup>
         <!-- Replace this with your Among Us Directory \/\/\/ -->
-        <AmongUsDirectory>C:\Users\Smili\OneDrive\Desktop\Project Lotus</AmongUsDirectory>
+        <AmongUsDirectory>C:\repos\AmongUs\AU-Lotus</AmongUsDirectory>
     </PropertyGroup>
     
     <ItemGroup>
@@ -28,7 +28,7 @@
     
     <ItemGroup>
         
-        <PackageReference Include="AmongUs.GameLibs.Steam" Version="2026.3.31" PrivateAssets="all" />
+        <PackageReference Include="AmongUs.GameLibs.Steam" Version="2026.9.29" PrivateAssets="all" />
 		<PackageReference Include="BepInEx.IL2CPP.MSBuild" Version="2.1.0-rc.1">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -44,7 +44,7 @@
         <PackageReference Include="Samboy063.Cpp2IL.Core" Version="2022.1.0-pre-release.19" />
     </ItemGroup>
 
-    <Target Name="Copy" AfterTargets="Build" Condition="'$(AmongUs)' != ''">
+    <Target Name="Copy" AfterTargets="Build" Condition="'$(AmongUsDirectory)' != ''">
         <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="$(AmongUsDirectory)/addons/" Condition="'$(Configuration)' == 'Debug'" />
     </Target>
 

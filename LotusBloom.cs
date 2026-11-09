@@ -1,3 +1,5 @@
+global using LotusBloom;
+global using Lotus;
 using Lotus.Addons;
 using LotusBloom.Version;
 using Lotus.Roles;
@@ -46,7 +48,7 @@ public class LotusBloom: LotusAddon
         harmony.PatchAll(Assembly.GetExecutingAssembly());
     }
     
-    public override string Name { get; } = "Lotus Bloom Addon";
+    public override string Name { get; } = "Lotus Bloom";
 
     public override VentLib.Version.Version Version { get; } = new LotusBloomVersion();
 }

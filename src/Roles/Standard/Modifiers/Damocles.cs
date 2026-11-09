@@ -141,18 +141,32 @@ public class Damocles : Subrole
     public override string Identifier() => "ψ";
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Starting Time")//, Translations.Options.SpeedGainPerKill)
+            .SubOption(sub => sub.KeyName("Starting Time", Translations.Options.StartingTime)
                 .AddFloatRange(10f, 120f, 2.5f, 10)
                 .BindFloat(suicideTimer.SetDuration)
                 .Build())
-            .SubOption(sub => sub.Name("Killing Extra Time")//, Translations.Options.SpeedGainPerKill)
+            .SubOption(sub => sub.KeyName("Killing Extra Time", Translations.Options.KillingExtraTime)
                 .AddFloatRange(2.5f, 30f, 2.5f, 4)
                 .BindFloat(f => extratimekill = f)
                 .Build())
-            .SubOption(sub => sub.Name("Surviving Meeting Extra Time")//, Translations.Options.SpeedGainPerKill)
+            .SubOption(sub => sub.KeyName("Surviving Meeting Extra Time", Translations.Options.SurvivingMeetingExtraTime)
                 .AddFloatRange(2.5f, 30f, 2.5f, 4)
                 .BindFloat(f => extratimemeeting = f)
                 .Build());
     protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier)
         .RoleColor(Color.red);
+
+    [Localized(nameof(Damocles))]
+    private static class Translations
+    {
+        [Localized(LBConstants.RoleName)] public static string RoleName = "Damocles";
+        [Localized(LBConstants.Description)] public static string Description = "You have a timer, if it reaches 0, you die. You gain and lose time in different ways, and the timer is paused during meetings.\n\n-=Time modifiers=-\nKilling- +Kill Cooldown and extra (See Options)\nTeammate Killing- +10 sec\nVenting- +10 sec for each unique vent, resets after meeting\nSurviving Meetings- +time (See Options)\nEjecting- +30% of time if not an Ally, -20% if it is\nRepairing- -15 sec\nTeammate Dies- -20s\nReporting- -10% of time" + LBConstants.DescriptionFooter;
+        [Localized(LBConstants.Blurb)] public static string Blurb = "Increase Time or Die";
+        [Localized(ModConstants.Options)] public static class Options
+        {
+            [Localized(nameof(StartingTime))] public static string StartingTime = "Starting Time";
+            [Localized(nameof(KillingExtraTime))] public static string KillingExtraTime = "Killing Extra Time";
+            [Localized(nameof(SurvivingMeetingExtraTime))] public static string SurvivingMeetingExtraTime = "Surviving Meeting Extra Time";
+        }
+    }
 }
