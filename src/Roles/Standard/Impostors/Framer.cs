@@ -204,6 +204,8 @@ public class Framer: Shapeshifter, IRoleUI
         else petButton.RevertSprite().SetText("Pet");
     }
     
+    protected override string ForceRoleImageDirectory() => "LotusBloom.assets.Impostors.Framer.yaml";
+    
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddShapeshiftOptions(base.RegisterOptions(optionStream)
             .SubOption(sub => sub.KeyName("Shift Swap Cooldown", FramerTranslations.Options.ShiftSwapCooldown)
